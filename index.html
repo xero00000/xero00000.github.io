@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rogue Cookie Expedition</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header>
+        <h1>Rogue Cookie Expedition</h1>
+        <p>
+          Descend into procedurally baked dungeons, gather cookies, and survive
+          the roguelike gauntlet.
+        </p>
+      </header>
+      <main>
+        <section class="hero-panel">
+          <div class="cookie-zone">
+            <button id="cookie" aria-label="Smash the cookie monster"></button>
+            <div class="cookie-info">
+              <p><strong>Cookies:</strong> <span id="cookie-count">0</span></p>
+              <p><strong>Floor:</strong> <span id="floor">1</span></p>
+              <p><strong>Depth Modifier:</strong> <span id="depth-mod">1.0x</span></p>
+            </div>
+          </div>
+          <div class="player-panel">
+            <h2>Adventurer</h2>
+            <div class="stat">
+              <label>HP</label>
+              <div class="bar">
+                <div id="hp-bar"></div>
+              </div>
+              <span id="hp-text">20 / 20</span>
+            </div>
+            <ul class="stat-list">
+              <li>Damage: <span id="damage">1</span></li>
+              <li>Auto Damage: <span id="auto-damage">0</span>/s</li>
+              <li>Defense: <span id="defense">0</span></li>
+              <li>Crit Chance: <span id="crit">5%</span></li>
+            </ul>
+            <div class="actions">
+              <button id="ability-focus">Focus Strike</button>
+              <button id="ability-heal">Devour Cookies</button>
+            </div>
+            <p class="cooldowns">
+              Focus CD: <span id="focus-cd">Ready</span> · Heal CD: <span id="heal-cd">Ready</span>
+            </p>
+          </div>
+          <div class="monster-panel">
+            <h2>Current Threat</h2>
+            <p class="monster-name" id="monster-name"></p>
+            <div class="stat">
+              <label>HP</label>
+              <div class="bar enemy">
+                <div id="monster-bar"></div>
+              </div>
+              <span id="monster-hp">--</span>
+            </div>
+            <p class="monster-desc" id="monster-desc"></p>
+            <button id="advance" disabled>Advance Deeper</button>
+          </div>
+        </section>
+
+        <section class="panels">
+          <div class="panel upgrades">
+            <h2>Upgrades &amp; Relics</h2>
+            <ul id="upgrades"></ul>
+          </div>
+          <div class="panel dungeon">
+            <h2>Dungeon Events</h2>
+            <div id="events"></div>
+            <button id="explore">Explore Side Room</button>
+          </div>
+          <div class="panel log">
+            <h2>Adventure Log</h2>
+            <ul id="log"></ul>
+          </div>
+        </section>
+      </main>
+      <footer>
+        <p>Made with crumbs, chaos, and courage.</p>
+      </footer>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
