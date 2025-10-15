@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Masque Noire: Firebase Multiplayer Horror</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Montserrat:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="noise"></div>
+    <header class="site-header">
+      <div class="header-inner">
+        <h1>Masque Noire</h1>
+        <p class="tagline">Firebase-powered multiplayer horror in occupied France, 1945.</p>
+        <div class="mode-toggle">
+          <span>Core Scenario</span>
+          <button id="modeToggle" aria-pressed="false">Switch to Alien Hunt</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel lobby" aria-labelledby="lobby-title">
+        <h2 id="lobby-title">Grand Vestibule</h2>
+        <p class="panel-intro">
+          Arrange your clandestine rendezvous beneath shattered chandeliers. Connect with Firebase
+          to coordinate the masquerade and assign roles.
+        </p>
+        <form id="lobbyForm" class="lobby-form">
+          <label>
+            <span>Player Alias</span>
+            <input type="text" id="playerName" name="playerName" placeholder="e.g. L'Ombre" required />
+          </label>
+          <label>
+            <span>Match ID</span>
+            <input type="text" id="matchId" name="matchId" placeholder="Enter or create" required />
+          </label>
+          <div class="button-row">
+            <button type="submit" class="primary">Enter Estate</button>
+            <button type="button" id="leaveMatch" class="ghost" disabled>Slip Away</button>
+          </div>
+          <p class="form-help">
+            Multiplayer state synchronizes via <strong>Firebase Firestore</strong>. Replace the placeholder
+            credentials in <code>script.js</code> with your project's configuration before deploying.
+          </p>
+        </form>
+        <div class="match-state" id="matchState" hidden>
+          <div class="state-line"><span class="label">You are:</span> <strong id="roleLabel">—</strong></div>
+          <div class="state-line"><span class="label">Mode:</span> <strong id="modeLabel">Core Scenario</strong></div>
+          <div class="state-line"><span class="label">Players:</span> <span id="playerRoster">0</span></div>
+        </div>
+      </section>
+
+      <section class="panel board" aria-labelledby="board-title">
+        <h2 id="board-title">Ballroom Theatre</h2>
+        <div class="board-content">
+          <div class="map-overlay">
+            <p class="map-callout">A decaying estate outside Paris. War-torn frescoes, flickering sconces, and secret crawlspaces.</p>
+          </div>
+          <div class="objectives">
+            <article class="objective survivors">
+              <h3>Survivors</h3>
+              <ul>
+                <li>Unravel environmental puzzles hidden in salons and galleries.</li>
+                <li>Earn survival tools, makeshift weapons, or <strong>key fragments</strong>.</li>
+                <li>Collect four fragments to reveal the main gate and escape.</li>
+                <li>Hide in wardrobes or beneath banquet tables—hold your breath when the killer draws near.</li>
+              </ul>
+              <button type="button" id="solvePuzzle" class="primary action" disabled>Attempt Puzzle</button>
+              <button type="button" id="hideAction" class="ghost action" disabled>Hide &amp; Hold Breath</button>
+            </article>
+            <article class="objective killer">
+              <h3>Killer</h3>
+              <ul>
+                <li>Stalk through hidden passages, servant vents, and secret chapels.</li>
+                <li>Complete killer enigmas to obtain brutal implements or sabotage gear.</li>
+                <li>Cut power with stolen wire cutters to plunge survivors into deeper darkness.</li>
+                <li>Sniff out muffled gasps when survivors fail quick-time events.</li>
+              </ul>
+              <button type="button" id="triggerKillerPuzzle" class="primary action" disabled>Resolve Killer Puzzle</button>
+              <button type="button" id="usePassage" class="ghost action" disabled>Navigate Passage</button>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel intel" aria-labelledby="intel-title">
+        <h2 id="intel-title">War Room &amp; Event Log</h2>
+        <div class="intel-grid">
+          <div class="status-card" id="survivorStatus">
+            <h3>Survivor Progress</h3>
+            <p><span class="label">Solved Puzzles:</span> <strong id="survivorSolved">0</strong></p>
+            <p><span class="label">Key Fragments:</span> <strong id="keyFragments">0 / 4</strong></p>
+            <p><span class="label">Tools:</span> <span id="survivorTools">—</span></p>
+          </div>
+          <div class="status-card" id="killerStatus">
+            <h3 id="killerTitle">Ripper's Arsenal</h3>
+            <p><span class="label">Solved Puzzles:</span> <strong id="killerSolved">0</strong></p>
+            <p><span class="label">Current Edge:</span> <span id="killerTools">—</span></p>
+            <p><span class="label">Last Known Location:</span> <span id="killerLocation">Unknown</span></p>
+          </div>
+          <div class="status-card log" id="eventLog">
+            <h3>Incident Tape</h3>
+            <ul id="logList"></ul>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        Alternate Mode <strong>Alien Hunt</strong>: the masquerade falls under a cosmic pall. An extraterrestrial
+        infiltrator wields invisibility, psychic tracking, and warps the estate's geometry while survivors jury-rig
+        countermeasures.
+      </p>
+    </footer>
+
+    <script type="module" src="script.js"></script>
+  </body>
+</html>
