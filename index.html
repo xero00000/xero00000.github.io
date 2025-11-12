@@ -1,0 +1,1962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro PVM Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- NEW: Tone.js for audio synthesis -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <style>
+        /* Using Inter as a clean, modern font for the UI text */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Orbitron:wght@400;700&display=swap');
+        
+        body { 
+            background-color: #1a1a1a; 
+            color: #e5e5e5; 
+            overflow: hidden; 
+            font-family: 'Inter', sans-serif;
+            /* Room background pattern - Default "Studio" */
+            background-image: radial-gradient(#333 1px, transparent 0);
+            background-size: 20px 20px;
+            transition: background-image 0.5s;
+        }
+
+        /* NEW: Environment Backgrounds */
+        body.env-den {
+            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIj4NCiAgICA8ZGVmcz4NCiAgICAgICAgPGZpbHRlciBpZD0id29vZC1ncmFpbi1maWx0ZXIiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGNvbG9yLWludGVycG9sYXRpb24tZmlsdGVycz0ic1JHQiI+DQogICAgICAgICAgICA8ZmVUaWxlIGlkPSJ3b29kLWdyYWluLW5vaXNlIiB4PSIwIiB5PSIwIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiByZXN1bHQ9Im5vaXNlIj4NCiAgICAgICAgICAgICAgICA8ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC4wMiAwLjE1IiBudW1PY3RhdmVzPSIyIiBzZWVkPSIxNSIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPg0KICAgICAgICAgICAgPC9mZVRpbGU+DQogICAgICAgICAgICA8ZmVUaWxlIGlkPSJ3b29kLWdyYWluLXN0cmVhayIgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgcmVzdWx0PSJzdHJlYWstbm9pc2UiPg0KICAgICAgICAgICAgICAgIDxmZVR1cmJ1bGVuY2UgdHlwZT0iZnJhY3RhbE5vaXNlIiBiYXNlRnJlcXVlbmN5PSIwLjAyIDAuMDIiIG51bU9jdGF2ZXM9IjIiIHNlZWQ9IjE1IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+DQogICAgICAgICAgICA8L2ZlVGlsZT4NCiAgICAgICAgICAgIDxmZUNvbXBvbmVudFRyYW5zZmVyIHJlc3VsdD0ic3RyZWFrcyI+DQogICAgICAgICAgICAgICAgPGZlRnVuY1IgdHlwZT0ibGluZWFyIiBzbG9wZT0iMS41IiBpbnRlcmNlcHQ9IjAuNSIvPg0KICAgICAgICAgICAgICAgIDxmZUZ1bmNBIHR5cGU9ImxpbmVhciIgc2xvcGU9IjAuMyIgaW50ZXJjZXB0PSIwIi8+DQogICAgICAgICAgICA8L2ZlQ29tcG9uZW50VHJhbnNmZXI+DQogICAgICAgICAgICA8ZmVTY2FsZU5vaXNlIHJlc3VsdD0ibGFyZ2UtZ3JhaW4iIGNsYXNzPSJ3b29kIiBiYXNlRnJlcXVlbmN5PSIwLjAyIDAuMDIiIG51bU9jdGF2ZXM9IjIiIHNlZWQ9IjE1IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIj4NCiAgICAgICAgICAgICAgICA8ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC4wMiAwLjAyIiBudW1PY3RhdmVzPSIyIiBzZWVkPSIxNSIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPg0KICAgICAgICAgICAgPC9mZVNjYWxlTm9pc2U+DQogICAgICAgICAgICA8ZmVBlendSZXN1bHQ9ImJsZW5kLWdyYWlucyIgaW49InN0cmVha3MiIGluMj0ibGFyZ2UtZ3JhaW4iIG1vZGU9Im11bHRpcGx5Ii8+DQogICAgICAgIDwvZmlsdGVyPg0KICAgICAgICA8cGF0dGVybiBpZD0id29vZC1ncmFpbiIgd2lkdGg9IjUwMCIgaGVpZ2h0PSI1MDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPg0KICAgICAgICAgICAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzkxN2E1YyIvPg0KICAgICAgICAgICAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsdGVyPSJ1cmwoI3dvb2QtZ3JhaW4tZmlsdGVyKSIgb3BhY2l0eT0iMC41Ii8+DQogICAgICAgIDwvcGF0dGVybj4NCiAgICA8L2RlZnM+DQogICAgPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCN3b29kLWdyYWluKSIvPg0KPC9zdmc+');
+        }
+        body.env-arcade {
+            background-color: #111;
+            background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMWEyYjRkIj48L3JlY3Q+PHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBmaWxsPSIjNDEzODZjIj48L3JlY3Q+PHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIGZpbGw9IiM0MTM4NmMiPjwvcmVjdD48L3N2Zz4=');
+            background-size: 40px 40px;
+        }
+
+
+        /* Custom "Fader" Sliders */
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #262626; /* neutral-800 */
+            border-radius: 3px;
+            outline: none;
+            transition: opacity .2s;
+            border: 1px solid #000;
+        }
+        input[type=range]:disabled::-webkit-slider-thumb {
+            background: #525252; /* neutral-500 */
+            border-color: #404040; /* neutral-600 */
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 24px;
+            background: #f59e0b; /* amber-500 */
+            border: 2px solid #404040; /* neutral-600 */
+            border-radius: 3px;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.1s;
+        }
+        /* NEW: Active feedback */
+        input[type=range]:enabled::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            background: #fbbf24; /* amber-400 */
+        }
+        input[type=range]:enabled::-webkit-slider-thumb:active {
+            transform: scale(1.2) translateY(1px);
+            background: #fcd34d; /* amber-300 */
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 14px;
+            height: 24px;
+            background: #f59e0b;
+            border: 2px solid #404040;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        /* Custom timeline slider */
+        #timeline-range { height: 8px; }
+        #timeline-range::-webkit-slider-thumb {
+            width: 12px; height: 20px; border-radius: 2px;
+        }
+        #timeline-range::-moz-range-thumb {
+            width: 12px; height: 20px; border-radius: 2px;
+        }
+        
+        /* Base styles for UI elements */
+        .panel-section { @apply bg-neutral-900/50 p-4 rounded-lg border border-neutral-700/70 shadow-inner; }
+        .panel-header { @apply text-xs font-mono font-bold uppercase tracking-widest text-amber-500 border-b border-neutral-700 pb-2 mb-3; }
+        .control-group { @apply flex flex-col gap-2; }
+        .control-label { @apply text-sm font-medium text-neutral-300 font-mono; }
+        
+        /* Buttons */
+        .btn {
+            @apply bg-neutral-700 hover:bg-neutral-600 text-neutral-200 font-mono text-sm py-2 px-4 rounded border border-neutral-600 shadow-md transition duration-150 ease-in-out
+                   active:bg-neutral-800 active:shadow-inner active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed;
+        }
+        .btn-sm { @apply py-1.5 px-3 text-xs; }
+        .btn-icon {
+            @apply bg-neutral-700 hover:bg-neutral-600 text-neutral-300 font-mono py-2.5 px-4 rounded border border-neutral-600 shadow-md transition duration-150 ease-in-out
+                   active:bg-neutral-800 active:shadow-inner active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed;
+        }
+        .btn-icon.active { @apply bg-amber-600 text-white shadow-inner; } /* For active webcam/test */
+
+        /* Radio Buttons */
+        .radio-label { @apply flex items-center gap-2 cursor-pointer text-sm font-mono text-neutral-300; }
+        .radio-label input { @apply w-4 h-4 text-amber-500 bg-neutral-700 border-neutral-600 focus:ring-amber-600 focus:ring-2 disabled:opacity-40; }
+
+        /* Toggles */
+        .toggle-label { @apply relative inline-flex items-center cursor-pointer; }
+        .toggle-label input { @apply sr-only peer; }
+        .toggle-track { @apply w-11 h-6 bg-neutral-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-amber-500/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed after:peer-disabled:bg-neutral-400; }
+
+        /* Scrollbar */
+        #control-panel {
+            scrollbar-width: thin;
+            scrollbar-color: #78716c #404040;
+        }
+        #control-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+        #control-panel::-webkit-scrollbar-track {
+            background: #404040; /* neutral-600 */
+            border-radius: 4px;
+        }
+        #control-panel::-webkit-scrollbar-thumb {
+            background: #78716c; /* neutral-500 */
+            border-radius: 4px;
+        }
+        #control-panel::-webkit-scrollbar-thumb:hover {
+            background: #f59e0b; /* amber-500 */
+        }
+
+        /* Glare Overlay */
+        #glare-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 50% 50%, transparent 60%, rgba(255,255,255,0.03) 80%, rgba(255,255,255,0.08) 100%);
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: 10;
+            transition: background-position 0.1s linear, background 0.5s;
+        }
+        /* NEW: Environment Glares */
+        .env-den #glare-overlay {
+            background: radial-gradient(circle at 20% 30%, rgba(255, 229, 180, 0.15) 0%, transparent 30%), 
+                        radial-gradient(circle at 50% 50%, transparent 60%, rgba(255,255,255,0.03) 80%, rgba(255,255,255,0.08) 100%);
+            opacity: 0.7;
+        }
+        .env-arcade #glare-overlay {
+            background: linear-gradient(135deg, rgba(255, 0, 255, 0.08) 0%, transparent 25%), 
+                        linear-gradient(225deg, rgba(0, 255, 255, 0.08) 0%, transparent 25%),
+                        radial-gradient(circle at 50% 50%, transparent 60%, rgba(255,255,255,0.05) 100%);
+            opacity: 0.8;
+        }
+
+        /* NEW: On-Screen Display */
+        #osd-container {
+            position: absolute;
+            top: 10%; left: 10%; right: 10%; bottom: 10%;
+            font-family: 'Orbitron', sans-serif; /* Pixel-style font */
+            color: #fff;
+            background: rgba(0, 0, 100, 0.4); /* Dark blue transparent bg */
+            border: 4px solid rgba(255, 255, 255, 0.5);
+            padding: 20px;
+            z-index: 20;
+            pointer-events: none;
+            user-select: none;
+            text-shadow: 2px 2px #000;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        #osd-container.active {
+            opacity: 1;
+        }
+        .osd-menu-title {
+            @apply text-3xl font-bold uppercase text-amber-400 mb-4 pb-2 border-b-2 border-amber-400/50;
+        }
+        .osd-menu-item {
+            @apply text-2xl font-bold uppercase flex justify-between items-center mb-2 p-2;
+        }
+        .osd-menu-item.selected {
+            background: rgba(245, 158, 11, 0.7); /* amber-500 */
+            color: #000;
+            text-shadow: none;
+        }
+        .osd-menu-item .osd-value-bar {
+            @apply w-1/2 h-6 bg-black/50 border-2 border-white/50 overflow-hidden;
+        }
+        .osd-menu-item .osd-value-fill {
+            @apply h-full bg-white;
+            transition: width 0.1s linear;
+        }
+
+    </style>
+</head>
+<body class="bg-neutral-900 text-neutral-300 flex items-center justify-center w-screen h-screen p-4 lg:p-8">
+
+<div id="tv-set" class="w-full h-full max-w-7xl max-h-[1000px] flex flex-col lg:flex-row gap-4 lg:gap-6 transition-opacity duration-1000">
+
+    <div id="screen-container" class="flex-1 flex flex-col bg-black rounded-xl shadow-2xl overflow-hidden border-2 border-neutral-700">
+        
+        <div id="screen-viewport" class="flex-1 w-full relative bg-black aspect-[4/3] shadow-inner overflow-hidden">
+            <video id="source-video" loop playsinline crossorigin="anonymous" class="w-full h-full object-contain hidden"></video>
+            <canvas id="glcanvas" class="w-full h-full"></canvas>
+            <div id="glare-overlay"></div>
+
+            <!-- NEW: OSD CONTAINER -->
+            <div id="osd-container">
+                <h2 id="osd-title" class="osd-menu-title">Video</h2>
+                <div id="osd-items">
+                    <!-- Items will be generated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Transport Bar (bottom bezel) -->
+        <div id="transport-bar" class="w-full p-3 bg-neutral-800 border-t-2 border-neutral-700 flex items-center gap-4">
+            <button id="play-pause-btn" class="text-amber-400 hover:text-amber-300 transition disabled:opacity-30" disabled>
+                <svg id="play-icon" class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="pause-icon" class="w-8 h-8 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            
+            <div class="flex-1 flex items-center gap-3 font-mono text-xs text-amber-400">
+                <span id="current-time" class="w-12 text-center">00:00</span>
+                <input type="range" id="timeline-range" min="0" max="100" value="0" step="0.1" class="flex-1" disabled>
+                <span id="duration-time" class="w-12 text-center">00:00</span>
+            </div>
+
+            <div class="flex items-center gap-2 w-32">
+                <svg class="w-5 h-5 text-amber-400/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+                <input type="range" id="volume-range" min="0" max="1" step="0.05" value="1">
+            </div>
+
+            <!-- MODIFIED: Renamed to Theatre Mode -->
+            <button id="fullscreen-btn" class="text-amber-400 hover:text-amber-300 transition ml-2" title="Toggle Theatre Mode">
+                <svg id="fs-enter-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1v4m0 0h-4m4 0l-5-5M4 16v4m0 0h4m-4 0l5-5m11 1v-4m0 0h-4m4 0l-5 5"></path></svg>
+                <svg id="fs-exit-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19v-4m0 0h-4m4 0l-5 5M5 9V5m0 0h4M5 5l5 5m0 5v4m0 0h4m-4 0l5-5m5-11v4m0 0h-4m4 0l-5 5"></path></svg>
+            </button>
+            
+            <!-- NEW: CRT-Only Fullscreen Button -->
+            <button id="crt-fullscreen-btn" class="text-amber-400 hover:text-amber-300 transition ml-2" title="CRT-Only Fullscreen">
+                <svg id="crt-fs-enter-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 4H5a1 1 0 00-1 1v5m0 8v5a1 1 0 001 1h5m8-14h5a1 1 0 011 1v5m0 8v5a1 1 0 01-1 1h-5"/>
+                </svg>
+                <svg id="crt-fs-exit-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 20h5a1 1 0 001-1v-5m0-8V5a1 1 0 00-1-1h-5m-8 14H5a1 1 0 01-1-1v-5m0-8V5a1 1 0 011-1h5"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- 
+      Control Panel (Heavily modified)
+    -->
+    <div id="control-panel" class="w-full lg:w-80 xl:w-96 bg-neutral-800 rounded-xl shadow-2xl p-5 flex-shrink-0 border-2 border-neutral-700 flex flex-col gap-4 overflow-y-auto">
+
+        <!-- Status Readout -->
+        <div class="bg-black/70 rounded p-3 text-center border border-neutral-700 shadow-inner">
+            <span id="status-text" class="text-sm font-mono text-amber-500 tracking-wider">POWER OFF</span>
+        </div>
+        
+        <!-- Section: Power & Presets -->
+        <div class="panel-section">
+            <div class="flex gap-2">
+                <button id="power-btn" class="btn-icon w-3/4 !bg-red-800/80 hover:!bg-red-700 !border-red-600/50 flex items-center justify-center gap-2" title="Toggle Main Power">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9"></path></svg>
+                    <span class="font-mono text-lg">POWER</span>
+                </button>
+                <!-- NEW: OSD Menu Button -->
+                <button id="menu-btn" class="btn-icon w-1/4" title="Toggle OSD Menu" disabled>
+                    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+            
+            <div class="control-group mt-3 pt-3 border-t border-neutral-700/50">
+                <label class="control-label">Load Preset</label>
+                <select id="preset-select" class="btn !w-full !text-left !px-3">
+                    <option value="">-- Select Preset --</option>
+                </select>
+            </div>
+            <div class="control-group mt-2">
+                <label class="control-label">Save Preset As</label>
+                <div class="flex gap-2">
+                    <input type="text" id="preset-name" placeholder="Preset Name..." class="flex-1 bg-black/50 border border-neutral-700 rounded px-3 py-2 text-sm font-mono text-amber-400 focus:outline-none focus:border-amber-500 placeholder:text-neutral-500">
+                    <button id="save-preset-btn" class="btn btn-sm !px-3">SAVE</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Input Signal -->
+        <div class="panel-section">
+            <h2 class="panel-header">Signal Input</h2>
+            <div class="grid grid-cols-3 gap-2 mb-3">
+                <label class="btn-icon text-center cursor-pointer" title="Open Video File">
+                    <input type="file" id="video-uploader" accept="video/*" class="hidden" disabled>
+                    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                </label>
+                <button id="screen-share-btn" class="btn-icon" title="Share Screen" disabled>
+                    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                </button>
+                <button id="webcam-btn" class="btn-icon" title="Use Webcam" disabled>
+                    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                </button>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" id="url-input" placeholder="Direct .mp4/.webm URL..." class="flex-1 bg-black/50 border border-neutral-700 rounded px-3 py-2 text-sm font-mono text-amber-400 focus:outline-none focus:border-amber-500 placeholder:text-neutral-500" disabled>
+                <button id="load-url-btn" class="btn btn-sm !px-3" disabled>TUNE</button>
+            </div>
+            <div class="flex gap-2 mt-3 pt-3 border-t border-neutral-700/50">
+                <span class="text-xs font-mono text-neutral-400 self-center">CH:</span>
+                <button class="btn btn-sm flex-1 channel-btn" data-url="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" disabled>1</button>
+                <button class="btn btn-sm flex-1 channel-btn" data-url="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" disabled>2</button>
+                <button class="btn btn-sm flex-1 channel-btn" data-url="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4" disabled>3</button>
+                <button id="test-pattern-btn" class="btn btn-sm flex-1 !px-2 channel-btn" title="Test Pattern" disabled>TEST</button>
+            </div>
+        </div>
+
+        <!-- Section: Signal Interference -->
+        <div class="panel-section">
+            <h2 class="panel-header">Signal Quality</h2>
+            <div class="flex flex-col gap-4">
+                <!-- NEW: Cable Type -->
+                <div class="control-group">
+                    <label class="control-label">Signal Type</label>
+                    <div class="flex flex-col gap-1">
+                        <label class="radio-label"><input type="radio" name="signal-type" value="0" checked class="accent-amber-500" disabled>RGB</label>
+                        <label class="radio-label"><input type="radio" name="signal-type" value="1" class="accent-amber-500" disabled>S-Video</label>
+                        <label class="radio-label"><input type="radio" name="signal-type" value="2" class="accent-amber-500" disabled>Composite</label>
+                        <label class="radio-label"><input type="radio" name="signal-type" value="3" class="accent-amber-500" disabled>RF (Antenna)</label>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Signal Strength</label>
+                    <input type="range" id="signal-range" min="0.7" max="1.0" step="0.01" value="1.0" disabled>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Ghosting</label>
+                    <input type="range" id="ghost-range" min="0.0" max="0.1" step="0.005" value="0.0" disabled>
+                </div>
+                <!-- NEW: Compression -->
+                <div class="control-group">
+                    <label class="control-label">Compression</label>
+                    <input type="range" id="compress-range" min="0.0" max="0.9" step="0.01" value="0.0" disabled>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: CRT Physics -->
+        <div id="physics-controls-panel" class="panel-section transition-opacity duration-300">
+            <h2 class="panel-header">Electron Beam</h2>
+            <div class="flex flex-col gap-4">
+                <div class="control-group">
+                    <label class="control-label">Phosphor Persistence</label>
+                    <input type="range" id="decay-range" min="0.8" max="0.995" step="0.002" value="0.94" disabled>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Beam Glow</label>
+                    <input type="range" id="glow-range" min="0.5" max="4.0" step="0.1" value="1.3" disabled>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Slow-Mo Beam</label>
+                    <label class="toggle-label">
+                        <input type="checkbox" id="slow-beam-toggle" class="peer" disabled>
+                        <div class="toggle-track"></div>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section: Display -->
+        <div class="panel-section">
+            <h2 class="panel-header">Display Output</h2>
+
+            <div class="control-group mb-4">
+                <label class="control-label">CRT Emulation</label>
+                <label class="toggle-label">
+                    <input type="checkbox" id="crt-on-toggle" class="peer" checked disabled>
+                    <div class="toggle-track"></div>
+                    <span class="ml-3 text-sm font-medium text-neutral-300 font-mono">BYPASS</span>
+                </label>
+            </div>
+            
+            <div id="display-controls" class="flex flex-col gap-4 transition-opacity duration-300">
+                 <div class="control-group">
+                    <label class="control-label">Bloom</label>
+                    <input type="range" id="bloom-range" min="0.0" max="1.0" step="0.05" value="0.4" disabled>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Screen Curvature</label>
+                    <input type="range" id="curve-range" min="0.0" max="0.4" step="0.01" value="0.2" disabled>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Convergence</label>
+                    <input type="range" id="converge-range" min="0.0" max="0.01" step="0.0005" value="0.0" disabled>
+                </div>
+                
+                <div class="control-group pt-2 border-t border-neutral-700/50">
+                    <label class="control-label">Refresh Rate</label>
+                    <div class="flex items-center gap-4">
+                        <label class="radio-label"><input type="radio" name="refresh" value="60" checked class="accent-amber-500" disabled>60Hz</label>
+                        <label class="radio-label" title="Black Frame Insertion for 120Hz+ Monitors"><input type="radio" name="refresh" value="120" class="accent-amber-500" disabled>120Hz(BFI)</label>
+                    </div>
+                </div>
+
+                <div class="control-group pt-2 border-t border-neutral-700/50">
+                    <label class="control-label">Scanline Mode</label>
+                    <div class="flex gap-4">
+                        <!-- RENAMED to 240p -->
+                        <label class="toggle-label">
+                            <input type="checkbox" id="res-240p-toggle" class="peer" disabled>
+                            <div class="toggle-track"></div>
+                            <span class="ml-3 text-sm font-medium text-neutral-300 font-mono">240p</span>
+                        </label>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="interlace-toggle" class="peer" disabled>
+                            <div class="toggle-track"></div>
+                            <span class="ml-3 text-sm font-medium text-neutral-300 font-mono">480i</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="control-group pt-2 border-t border-neutral-700/50">
+                    <label class="control-label">Phosphor Mask</label>
+                    <div class="flex flex-col gap-1">
+                        <label class="radio-label"><input type="radio" name="mask" value="1" checked class="accent-amber-500" disabled>Aperture Grille</label>
+                        <label class="radio-label"><input type="radio" name="mask" value="2" class="accent-amber-500" disabled>Shadow Mask</label>
+                        <label class="radio-label"><input type="radio" name="mask" value="3" class="accent-amber-500" disabled>Slot Mask</label>
+                    </div>
+                </div>
+
+                <div class="control-group pt-2 border-t border-neutral-700/50">
+                    <label class="control-label">Screen Share Crop</label>
+                    <label class="toggle-label">
+                        <input type="checkbox" id="crop-43-toggle" class="peer" disabled>
+                        <div class="toggle-track"></div>
+                        <span class="ml-3 text-sm font-medium text-neutral-300 font-mono">4:3 CROP</span>
+                    </label>
+                </div>
+
+                <div class="control-group pt-2 border-t border-neutral-700/50">
+                    <label class="control-label">Degauss</label>
+                    <button id="degauss-btn" class="btn btn-sm !px-3" disabled>DEGAUSS</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: Hardware Faults Section -->
+        <div class="panel-section">
+            <h2 class="panel-header">Hardware Faults</h2>
+            <div class="flex flex-col gap-4">
+                <div class="control-group">
+                    <label class="control-label">Vertical Hold</label>
+                    <input type="range" id="vhold-range" min="0.0" max="1.0" step="0.005" value="0.5" disabled>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Horizontal Hold (Tint)</label>
+                    <input type="range" id="hhold-range" min="-0.5" max="0.5" step="0.01" value="0.0" disabled>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Failing Color Guns</label>
+                    <div class="flex gap-4">
+                        <label class="toggle-label">
+                            <input type="checkbox" id="weak-red-toggle" class="peer" disabled>
+                            <div class="toggle-track !peer-checked:bg-red-600"></div>
+                            <span class="ml-3 text-sm font-medium text-red-400 font-mono">R</span>
+                        </label>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="weak-green-toggle" class="peer" disabled>
+                            <div class="toggle-track !peer-checked:bg-green-600"></div>
+                            <span class="ml-3 text-sm font-medium text-green-400 font-mono">G</span>
+                        </label>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="weak-blue-toggle" class="peer" disabled>
+                            <div class="toggle-track !peer-checked:bg-blue-600"></div>
+                            <span class="ml-3 text-sm font-medium text-blue-400 font-mono">B</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">VCR Mode</label>
+                    <label class="toggle-label">
+                        <input type="checkbox" id="vcr-mode-toggle" class="peer" disabled>
+                        <div class="toggle-track"></div>
+                    </label>
+                </div>
+                <!-- FIX: Added the missing "tracking-btn" -->
+                <div class="control-group">
+                    <label class="control-label">VCR Tracking</label>
+                    <button id="tracking-btn" class="btn btn-sm !px-3" disabled>ADJUST</button>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Screen Burn-In</label>
+                    <input type="range" id="burn-in-range" min="0.0" max="1.0" step="0.01" value="0.0" disabled>
+                </div>
+                <label class="btn btn-sm cursor-pointer text-center" title="Upload Burn-In Image">
+                    <input type="file" id="burn-in-uploader" accept="image/*" class="hidden" disabled>
+                    UPLOAD BURN-IN
+                </label>
+            </div>
+        </div>
+
+        <!-- NEW: Environment Section -->
+        <div class="panel-section">
+            <h2 class="panel-header">Environment</h2>
+            <div class="flex flex-col gap-1">
+                <label class="radio-label"><input type="radio" name="environment" value="studio" checked class="accent-amber-500" disabled>Studio</label>
+                <label class="radio-label"><input type="radio" name="environment" value="den" class="accent-amber-500" disabled>80s Den</label>
+                <label class="radio-label"><input type="radio" name="environment" value="arcade" class="accent-amber-500" disabled>Arcade</label>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- == SHADERS (Heavily Updated) == -->
+<script type="x-shader/x-vertex" id="vert-shader">
+    #version 300 es
+    in vec4 a_position;
+    out vec2 v_uv;
+    void main() {
+        gl_Position = a_position;
+        v_uv = a_position.xy * 0.5 + 0.5;
+    }
+</script>
+
+<script type="x-shader/x-fragment" id="frag-phosphor">
+    #version 300 es
+    precision highp float;
+    
+    uniform sampler2D u_video;
+    uniform sampler2D u_persistence;
+    uniform float u_time;
+    uniform float u_decay;
+    uniform float u_beam_glow;
+    uniform float u_beam_progress;
+    uniform bool u_slow_mo;
+    uniform bool u_crop_43;
+    uniform vec2 u_video_res;
+    
+    // Interference Uniforms
+    uniform float u_signal_strength;
+    uniform float u_ghosting;
+    uniform float u_tracking_error; // 0.0 = none, 1.0 = full error
+    uniform int u_source_mode;     // 0: Video, 1: Snow, 2: Test Pattern
+    
+    // NEW: Signal Type Uniforms
+    uniform int u_signal_type; // 0:RGB, 1:S-Video, 2:Composite, 3:RF
+    uniform float u_compression; // 0.0 - 1.0
+    uniform bool u_vcr_mode;
+
+    in vec2 v_uv;
+    out vec4 outColor;
+    
+    const float PI = 3.14159265359;
+
+    // Procedural noise
+    float random(vec2 st) { return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123); }
+    float random(float t) { return random(vec2(t, t * 1.234)); }
+
+    // --- NTSC Simulation ---
+    // RGB to YIQ (Luma, In-phase, Quadrature)
+    vec3 rgb2yiq(vec3 c) {
+        return vec3(
+            0.299 * c.r + 0.587 * c.g + 0.114 * c.b,
+            0.596 * c.r - 0.274 * c.g - 0.322 * c.b,
+            0.211 * c.r - 0.523 * c.g + 0.312 * c.b
+        );
+    }
+    // YIQ to RGB
+    vec3 yiq2rgb(vec3 c) {
+        return vec3(
+            c.x + 0.956 * c.y + 0.621 * c.z,
+            c.x - 0.272 * c.y - 0.647 * c.z,
+            c.x - 1.106 * c.y + 1.703 * c.z
+        );
+    }
+    // --- End NTSC ---
+
+    // SMPTE Color Bars
+    vec3 testPattern(vec2 uv) {
+        if (uv.y < 0.25) { // Bottom section
+            if (uv.x < 1.0/6.0) return vec3(0.0, 0.0, 1.0); // Blue
+            if (uv.x < 2.0/6.0) return vec3(0.0, 0.0, 0.0); // Black
+            if (uv.x < 3.0/6.0) return vec3(1.0, 0.0, 1.0); // Magenta
+            if (uv.x < 4.0/6.0) return vec3(0.0, 0.0, 0.0); // Black
+            if (uv.x < 5.0/6.0) return vec3(0.0, 1.0, 1.0); // Cyan
+            if (uv.x < 1.0)     return vec3(0.0, 0.0, 0.0); // Black
+        }
+        if (uv.y < 0.33) { // Middle section
+             if (uv.x < 1.0/6.0) return vec3(0.0, 0.0, 1.0); // Blue
+             if (uv.x < 5.0/6.0) return vec3(0.1, 0.1, 0.1); // Dark grey
+             if (uv.x < 1.0)     return vec3(0.0, 0.0, 0.0); // Black
+        }
+        // Top bars
+        float barWidth = 1.0 / 7.0;
+        if (uv.x < barWidth) return vec3(0.75); // Grey
+        if (uv.x < barWidth * 2.0) return vec3(0.75, 0.75, 0.0); // Yellow
+        if (uv.x < barWidth * 3.0) return vec3(0.0, 0.75, 0.75); // Cyan
+        if (uv.x < barWidth * 4.0) return vec3(0.0, 0.75, 0.0); // Green
+        if (uv.x < barWidth * 5.0) return vec3(0.75, 0.0, 0.75); // Magenta
+        if (uv.x < barWidth * 6.0) return vec3(0.75, 0.0, 0.0); // Red
+        return vec3(0.0, 0.0, 0.75); // Blue
+    }
+    
+    // Video texture sampling
+    vec4 getVideo(vec2 uv) {
+        // u_compression ranges from 0.0 (none) to 0.9 (max)
+        if (u_compression < 0.01) { // Check if compression is off (default)
+            return texture(u_video, uv); // Return the clean texture
+        }
+
+        // Compression
+        // As u_compression goes 0.01 -> 0.9, we want block_size to go high -> low
+        // Let's remap the 0.01-0.9 range to 0.0-1.0 for interpolation
+        float block_amount = (u_compression - 0.01) / 0.89;
+        float block_size = mix(512.0, 32.0, block_amount); // 512 is high-res, 32 is max blocky
+        
+        vec2 block_uv = floor(uv * block_size) / block_size;
+        return texture(u_video, block_uv);
+    }
+
+    void main() {
+        vec2 uv = v_uv; 
+        vec4 history = texture(u_persistence, v_uv);
+        vec4 decayed = history * u_decay;
+
+        float beamHeight = u_slow_mo ? 0.06 : 1.0;
+        float distToBeam = abs((1.0 - uv.y) - u_beam_progress);
+        float hit = smoothstep(beamHeight, 0.0, distToBeam);
+        if (!u_slow_mo) hit = 1.0;
+
+        vec4 newItem;
+        float noise = random(uv * u_time);
+
+        if (u_source_mode == 1) { // Snow
+            newItem = vec4(vec3(noise), 1.0);
+        } else if (u_source_mode == 2) { // Test Pattern
+            newItem = vec4(testPattern(uv), 1.0);
+        } else { // Video
+            vec2 videoUV = uv;
+            // Crop logic
+            if (u_crop_43 && u_video_res.y > 0.0) {
+                float videoAspect = u_video_res.x / u_video_res.y;
+                float targetAspect = 4.0 / 3.0;
+                
+                if (videoAspect > targetAspect) {
+                    float newWidth = targetAspect / videoAspect;
+                    float offset = (1.0 - newWidth) * 0.5;
+                    videoUV.x = videoUV.x * newWidth + offset;
+                } else if (videoAspect < targetAspect) {
+                    float newHeight = videoAspect / targetAspect;
+                    float offset = (1.0 - newHeight) * 0.5;
+                    videoUV.y = videoUV.y * newHeight + offset;
+                }
+            }
+            
+            vec2 pixel = 1.0 / u_video_res;
+            
+            // --- Signal Type Simulation ---
+            if (u_signal_type == 0) { // RGB
+                newItem = getVideo(videoUV);
+            } else {
+                // S-Video, Composite, RF all use YIQ but with different levels of degradation
+                vec3 yiq = rgb2yiq(getVideo(videoUV).rgb);
+                
+                if (u_signal_type == 1) { // S-Video
+                    // Slight chroma blur
+                    yiq.y = 0.5 * (rgb2yiq(getVideo(videoUV - pixel * 1.0).rgb).y + rgb2yiq(getVideo(videoUV + pixel * 1.0).rgb).y);
+                    yiq.z = 0.5 * (rgb2yiq(getVideo(videoUV - pixel * 1.0).rgb).z + rgb2yiq(getVideo(videoUV + pixel * 1.0).rgb).z);
+                }
+                
+                if (u_signal_type == 2 || u_signal_type == 3) { // Composite & RF
+                    // Heavier chroma blur (horizontal)
+                    yiq.y = 0.25 * (rgb2yiq(getVideo(videoUV - pixel * 2.0).rgb).y + 2.0 * yiq.y + rgb2yiq(getVideo(videoUV + pixel * 2.0).rgb).y);
+                    yiq.z = 0.25 * (rgb2yiq(getVideo(videoUV - pixel * 2.0).rgb).z + 2.0 * yiq.z + rgb2yiq(getVideo(videoUV + pixel * 2.0).rgb).z);
+                    
+                    // Dot Crawl (interference between Luma and Chroma)
+                    float luma = yiq.x;
+                    float phase = fract(videoUV.x * u_video_res.x * 0.5 + u_time * 3.7699); // NTSC color subcarrier freq
+                    float dot_crawl = (sin(phase * PI * 2.0) * 0.5 + 0.5) * 0.1;
+                    yiq.x += dot_crawl * (luma - 0.5);
+                }
+                
+                newItem = vec4(yiq2rgb(yiq), 1.0);
+            }
+            
+            // Ghosting
+            vec4 ghost = getVideo(videoUV - vec2(u_ghosting, 0.0)) * 0.5;
+            newItem = newItem * (1.0 - u_ghosting * 0.5) + ghost * u_ghosting;
+            
+            // Signal Strength Noise
+            float signalNoise = (1.0 - u_signal_strength) * noise * 0.8;
+            newItem.rgb += signalNoise;
+
+            // Tracking Error
+            if (u_tracking_error > 0.0) {
+                float tracking_y = fract(u_time * 0.5);
+                float tracking_band = smoothstep(0.0, 0.01, abs(uv.y - tracking_y) - 0.1) * smoothstep(0.0, 0.01, abs(uv.y - tracking_y));
+                float tracking_noise = random(vec2(uv.x, u_time)) * 2.0 - 1.0;
+                newItem.rgb += tracking_band * tracking_noise * u_tracking_error;
+                newItem.rgb *= (1.0 - (tracking_band * 0.5 * u_tracking_error));
+            }
+            
+            // VCR Head Switching
+            if (u_vcr_mode && videoUV.y < 0.02) {
+                newItem.rgb *= 0.5;
+                newItem.rgb += random(vec2(videoUV.x, u_time)) * 0.5;
+            }
+        }
+        
+        vec4 beamColor = newItem * (u_beam_glow + (noise * 0.08));
+        outColor = mix(decayed, max(decayed, beamColor), hit);
+        outColor.a = 1.0;
+    }
+</script>
+
+<script type="x-shader/x-fragment" id="frag-display">
+    #version 300 es
+    precision highp float;
+    
+    uniform sampler2D u_texture;
+    uniform vec2 u_resolution;
+    uniform float u_time;
+    
+    // Display Params
+    uniform float u_curvature;
+    uniform int u_refresh_rate;
+    uniform int u_frame;
+    uniform float u_bloom;
+    
+    // OSD Params
+    uniform float u_brightness;
+    uniform float u_contrast;
+    uniform float u_saturation;
+    uniform float u_tint; // hue shift
+    uniform float u_sharpness;
+    
+    // Physics
+    uniform bool u_res_240p; // Renamed
+    uniform bool u_interlace;
+    uniform float u_convergence;
+    uniform int u_phosphor_mask;
+    
+    // Power & Degauss
+    uniform bool u_power_on;
+    uniform float u_power_on_time;
+    uniform bool u_degauss_active;
+    uniform float u_degauss_time;
+
+    // Faults
+    uniform float u_v_hold;
+    uniform bool u_weak_red;
+    uniform bool u_weak_green;
+    uniform bool u_weak_blue;
+    uniform sampler2D u_burn_in_tex;
+    uniform float u_burn_in_amount;
+
+    in vec2 v_uv;
+    out vec4 outColor;
+    
+    const float PI = 3.14159265359;
+
+    // --- Color Space Functions ---
+    vec3 rgb2hsv(vec3 c) {
+        vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+        vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+        vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+        float d = q.x - min(q.w, q.y);
+        float e = 1.0e-10;
+        return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+    }
+    vec3 hsv2rgb(vec3 c) {
+        vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+        vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+        return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+    }
+    // --- End Color Space ---
+
+    vec2 curve(vec2 uv) {
+        uv = (uv - 0.5) * 2.0;
+        uv.x *= 1.0 + pow((abs(uv.y) * u_curvature), 2.1);
+        uv.y *= 1.0 + pow((abs(uv.x) * u_curvature), 2.1);
+        uv *= 0.98; 
+        return (uv / 2.0) + 0.5;
+    }
+
+    vec3 shadowMask(vec3 col, vec2 uv, float scale) {
+        float y = uv.y * scale;
+        float x = uv.x * scale;
+        float r = 0.9 + 0.1 * sin(y * 0.5 + x);
+        float g = 0.9 + 0.1 * sin(y);
+        float b = 0.9 + 0.1 * sin(y * 0.5 - x);
+        return col * vec3(r, g, b);
+    }
+
+    vec3 apertureGrille(vec3 col, vec2 uv, float scale) {
+        float x = uv.x * scale * 3.0;
+        float m = mod(x, 3.0);
+        if (m < 1.0) col.r *= 1.2;
+        else if (m < 2.0) col.g *= 1.2;
+        else col.b *= 1.2;
+        float grille = 0.8 + 0.2 * sin(x * PI * 2.0);
+        return col * grille;
+    }
+
+    vec3 slotMask(vec3 col, vec2 uv, float scale) {
+        float x = uv.x * scale;
+        float y = uv.y * scale;
+        float r = 0.9 + 0.1 * sin(x + y);
+        float g = 0.9 + 0.1 * sin(x - y);
+        float b = 0.9 + 0.1 * sin(y * 2.0);
+        col.r *= (0.9 + 0.1 * sin(x * PI * 2.0));
+        col.g *= (0.9 + 0.1 * sin(x * PI * 2.0 + (PI * 2.0 / 3.0)));
+        col.b *= (0.9 + 0.1 * sin(x * PI * 2.0 + (PI * 4.0 / 3.0)));
+        return col * vec3(r,g,b) * (0.8 + 0.2 * sin(y * PI * 2.0));
+    }
+
+    void main() {
+        vec2 uv = v_uv;
+
+        // Degauss
+        if (u_degauss_active) {
+            float degauss = 1.0 - u_degauss_time;
+            float wobble = sin(u_degauss_time * PI * 8.0) * pow(degauss, 3.0) * 0.05;
+            uv.x += sin(uv.y * 10.0 + u_time * 2.0) * wobble;
+            uv.y += cos(uv.x * 10.0 + u_time * 2.0) * wobble;
+        }
+        
+        // V-Hold
+        uv.y = fract(uv.y + u_time * (u_v_hold - 0.5) * 0.5);
+
+        // Curvature
+        uv = curve(uv);
+        
+        if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
+            outColor = vec4(0.0, 0.0, 0.0, 1.0);
+            return;
+        }
+
+        // 240p Mode
+        if (u_res_240p) {
+            uv.y = floor(uv.y * 240.0) / 240.0;
+        }
+
+        // --- Sharpening ---
+        vec2 texel = 1.0 / u_resolution;
+        vec3 col = texture(u_texture, uv).rgb;
+        if (u_sharpness > 0.0) {
+            vec3 s0 = texture(u_texture, uv - vec2(0.0, texel.y)).rgb;
+            vec3 s1 = texture(u_texture, uv - vec2(texel.x, 0.0)).rgb;
+            vec3 s2 = texture(u_texture, uv + vec2(texel.x, 0.0)).rgb;
+            vec3 s3 = texture(u_texture, uv + vec2(0.0, texel.y)).rgb;
+            vec3 neighbors = (s0 + s1 + s2 + s3) * 0.25;
+            col = mix(neighbors, col, 1.0 + u_sharpness);
+        }
+
+        // Convergence
+        vec2 dist = (uv - 0.5) * u_convergence * 20.0;
+        col.r = texture(u_texture, uv + dist * 0.5).r;
+        col.g = col.g; // G is center
+        col.b = texture(u_texture, uv - dist * 0.5).b;
+        
+        // Scanlines
+        float scanCount = (u_res_240p ? 240.0 : u_resolution.y * 0.8);
+        float scanIntensity = u_res_240p ? 0.45 : 0.25; 
+        float s = sin(uv.y * scanCount * 6.283185) * 0.5 + 0.5;
+        col *= 1.0 - (s * scanIntensity);
+
+        // Interlacing
+        if (u_interlace) {
+            float line = mod(floor(v_uv.y * u_resolution.y), 2.0);
+            float frame_mod = mod(float(u_frame), 2.0);
+            if (line != frame_mod) {
+                col *= 0.5;
+            }
+        }
+
+        // Phosphor Mask
+        float mask_scale = u_resolution.x * 0.25;
+        if (u_phosphor_mask == 1) col = apertureGrille(col, uv, mask_scale);
+        else if (u_phosphor_mask == 2) col = shadowMask(col, uv, mask_scale * 1.5);
+        else if (u_phosphor_mask == 3) col = slotMask(col, uv, mask_scale);
+
+        // Vignette
+        float vig = uv.x * uv.y * (1.0 - uv.x) * (1.0 - uv.y) * 16.0;
+        vig = pow(vig, 0.15);
+        col *= vig;
+        
+        // --- OSD Color Controls ---
+        // 1. Tint (Hue)
+        vec3 hsv = rgb2hsv(col);
+        hsv.x = fract(hsv.x + u_tint);
+        col = hsv2rgb(hsv);
+        // 2. Saturation
+        float gray = dot(col, vec3(0.2126, 0.7152, 0.0722));
+        col = mix(vec3(gray), col, u_saturation);
+        // 3. Contrast
+        col = (col - 0.5) * u_contrast + 0.5;
+        // 4. Brightness
+        col *= u_brightness;
+        
+        // Bloom
+        col += max(vec3(0.0), col - 0.5) * u_bloom * 2.0;
+        col *= 1.3; // Base brightness
+
+        // --- Hardware Faults ---
+        if (u_weak_red) col.r *= 0.5;
+        if (u_weak_green) col.g *= 0.5;
+        if (u_weak_blue) col.b *= 0.5;
+        
+        // Burn-In (apply *after* color correction, like a physical fault)
+        if (u_burn_in_amount > 0.0) {
+            vec4 burn = texture(u_burn_in_tex, v_uv); // Use v_uv (uncorrected) for burn-in
+            col += burn.rgb * u_burn_in_amount * 0.5;
+        }
+
+        // Refresh Rate
+        if (u_refresh_rate == 120) {
+            col *= 1.8;
+            col *= (u_frame % 2 != 0) ? 1.0 : 0.0;
+        } else {
+            col *= (u_frame % 2 == 0) ? 1.0 : 0.96;
+        }
+
+        // Power On/Off
+        float power_t = 0.0;
+        float now_time = u_time - u_power_on_time;
+
+        if (u_power_on) {
+            power_t = smoothstep(0.0, 0.5, now_time);
+            float dot_intensity = 1.0 - smoothstep(0.0, 0.3, now_time);
+            float dot_radius = 0.05 + pow(max(0.0, 1.0 - power_t), 2.0) * 2.0;
+            float dot = (1.0 - smoothstep(0.0, dot_radius, length(v_uv - 0.5))) * dot_intensity;
+            col = col * power_t;
+            col = mix(col, vec3(1.0), dot);
+        } else {
+            power_t = 1.0 - smoothstep(0.0, 0.3, now_time);
+            float dot_intensity = (smoothstep(0.2, 0.3, now_time) * (1.0 - smoothstep(0.3, 0.6, now_time))) * 2.0;
+            float dot = 1.0 - smoothstep(0.0, 0.05, length(v_uv - 0.5));
+            col = col * power_t;
+            col += vec3(dot * dot_intensity);
+        }
+
+        outColor = vec4(col, 1.0);
+    }
+</script>
+
+<!-- == JAVASCRIPT (Heavily Updated) == -->
+<script>
+    let gl, progPhos, progDisp, quad, texA, texB, vidTex, fboA, fboB;
+    let useA = true, beam = 0.0, frameCount = 0;
+    let burnInTex; // NEW: Texture for burn-in
+    let loopTime = 0.0; // Use a consistent time for the loop
+    
+    // --- Audio Synths & Context ---
+    let audioReady = false;
+    let powerWhine, staticNoise, speakerEQ, videoSource;
+    let degaussSynth, clickSynth, thunkSynth, zipperSynth;
+
+    // --- DOM Elements ---
+    const allInputs = () => document.querySelectorAll('#control-panel input, #control-panel button:not(#power-btn), #control-panel select, #transport-bar input, #transport-bar button:not(#fullscreen-btn):not(#crt-fullscreen-btn)');
+    const bodyEl = document.body;
+    const tvSetElement = document.getElementById('tv-set');
+    const canvas = document.getElementById('glcanvas');
+    const video = document.getElementById('source-video');
+    const status = document.getElementById('status-text');
+    const playBtn = document.getElementById('play-pause-btn');
+    const timeline = document.getElementById('timeline-range');
+    const curTimeTxt = document.getElementById('current-time');
+    const durTimeTxt = document.getElementById('duration-time');
+    const screenShareBtn = document.getElementById('screen-share-btn');
+    const crtOnToggle = document.getElementById('crt-on-toggle');
+    const physicsControlsPanel = document.getElementById('physics-controls-panel');
+    const displayControls = document.getElementById('display-controls');
+    const crop43Toggle = document.getElementById('crop-43-toggle');
+    
+    // Fullscreen buttons
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    const fsEnterIcon = document.getElementById('fs-enter-icon');
+    const fsExitIcon = document.getElementById('fs-exit-icon');
+    const crtFullscreenBtn = document.getElementById('crt-fullscreen-btn'); // NEW
+    const crtFsEnterIcon = document.getElementById('crt-fs-enter-icon'); // NEW
+    const crtFsExitIcon = document.getElementById('crt-fs-exit-icon'); // NEW
+    const screenContainer = document.getElementById('screen-container'); // NEW
+    
+    const glareOverlay = document.getElementById('glare-overlay');
+    
+    // NEW DOM Elements
+    const powerBtn = document.getElementById('power-btn');
+    const menuBtn = document.getElementById('menu-btn');
+    const webcamBtn = document.getElementById('webcam-btn');
+    const testPatternBtn = document.getElementById('test-pattern-btn');
+    const trackingBtn = document.getElementById('tracking-btn'); // This was null
+    const degaussBtn = document.getElementById('degauss-btn');
+    const presetSelect = document.getElementById('preset-select');
+    const presetNameInput = document.getElementById('preset-name');
+    const savePresetBtn = document.getElementById('save-preset-btn');
+    const fileUploader = document.getElementById('video-uploader');
+    const urlInput = document.getElementById('url-input');
+    const loadUrlBtn = document.getElementById('load-url-btn');
+    const channelBtns = document.querySelectorAll('.channel-btn');
+    const burnInUploader = document.getElementById('burn-in-uploader');
+    const osdContainer = document.getElementById('osd-container');
+    const osdTitle = document.getElementById('osd-title');
+    const osdItems = document.getElementById('osd-items');
+
+    // --- Shader/Effect Parameters ---
+    const params = { 
+        powerOn: false,
+        powerOnTime: 0.0,
+        sourceMode: 1, // 0=Video, 1=Snow, 2=Test
+        decay: 0.94, glow: 1.3, bloom: 0.4, curve: 0.2, 
+        slowMo: false, refresh: 60, res240p: false, crtOn: true,
+        crop43: false,
+        
+        // OSD Params
+        osdActive: false,
+        osdMenuIndex: 0,
+        osdItemIndex: 0,
+        brightness: 1.0,
+        contrast: 1.0,
+        saturation: 1.1,
+        tint: 0.0,
+        sharpness: 0.0,
+        
+        // Signal
+        signalType: 0,
+        signal: 1.0,
+        ghost: 0.0,
+        compression: 0.0,
+        
+        // Physics
+        interlace: false,
+        convergence: 0.0,
+        mask: 1,
+        degaussActive: false,
+        degaussTime: 0.0,
+        degaussStartTime: 0.0,
+
+        // Faults
+        tracking: 0.0,
+        trackingTimeout: null,
+        vHold: 0.5,
+        weakRed: false,
+        weakGreen: false,
+        weakBlue: false,
+        burnInAmount: 0.0,
+        vcrMode: false,
+    };
+    
+    // --- NEW: Audio Init ---
+    async function initAudio() {
+        if (audioReady) return;
+        try {
+            await Tone.start();
+            speakerEQ = new Tone.EQ3({ low: -8, mid: -2, high: -12, lowFrequency: 500, highFrequency: 2500 }).toDestination();
+            videoSource = Tone.getContext().createMediaElementSource(video);
+            Tone.connect(videoSource, speakerEQ);
+            powerWhine = new Tone.Oscillator({ type: "sine", frequency: 15734, volume: -40 }).toDestination();
+            staticNoise = new Tone.Noise({ type: "white", volume: -35, fadeIn: 0.01, fadeOut: 0.01 }).toDestination();
+            
+            // UI Sound FX
+            clickSynth = new Tone.MembraneSynth({ pitchDecay: 0.008, octaves: 2, envelope: { attack: 0.001, decay: 0.05, sustain: 0 } }).toDestination();
+            thunkSynth = new Tone.NoiseSynth({ noise: { type: 'pink' }, envelope: { attack: 0.001, decay: 0.1, sustain: 0 } }).toDestination();
+            zipperSynth = new Tone.NoiseSynth({ noise: { type: 'white' }, volume: -20, envelope: { attack: 0.01, decay: 0.02, sustain: 0.01 } }).toDestination();
+            
+            // FIX: Use correct v14 syntax for PolySynth
+            degaussSynth = new Tone.PolySynth({
+                voice: Tone.Synth,
+                options: {
+                    oscillator: { type: "sine" },
+                    envelope: { attack: 0.01, decay: 0.5, sustain: 0.1, release: 0.2 },
+                    volume: -10
+                }
+            }).toDestination();
+            degaussSynth.set({ "detune": 1200 });
+
+            audioReady = true;
+            console.log("Audio context initialized.");
+        } catch (err) {
+            console.error("Failed to initialize audio:", err);
+            status.textContent = "ERR: AUDIO FAILED TO INIT";
+        }
+    }
+    
+    // --- NEW: OSD Logic ---
+    const OSD_MENUS = [
+        {
+            title: "Video",
+            items: [
+                { name: "Brightness", param: "brightness", min: 0.5, max: 1.5, step: 0.01 },
+                { name: "Contrast", param: "contrast", min: 0.5, max: 1.5, step: 0.01 },
+                { name: "Saturation", param: "saturation", min: 0.0, max: 2.0, step: 0.01 },
+                { name: "Tint (H-Hold)", param: "tint", min: -0.5, max: 0.5, step: 0.01, faderId: 'hhold-range' },
+                { name: "Sharpness", param: "sharpness", min: 0.0, max: 2.0, step: 0.1 },
+            ]
+        },
+        {
+            title: "System",
+            items: [
+                { name: "Reset All", action: "resetPresets" },
+                { name: "Save Preset", action: "savePresetOSD" },
+            ]
+        }
+    ];
+
+    function renderOSD() {
+        if (!params.osdActive) {
+            osdContainer.classList.remove('active');
+            return;
+        }
+        osdContainer.classList.add('active');
+        const menu = OSD_MENUS[params.osdMenuIndex];
+        osdTitle.textContent = menu.title;
+        
+        let html = "";
+        menu.items.forEach((item, index) => {
+            const selected = (index === params.osdItemIndex) ? 'selected' : '';
+            html += `<div class="osd-menu-item ${selected}" data-index="${index}">`;
+            html += `<span>${item.name}</span>`;
+            if (item.param) {
+                const value = params[item.param];
+                const percent = ((value - item.min) / (item.max - item.min)) * 100;
+                html += `<div class="osd-value-bar"><div class="osd-value-fill" style="width: ${percent}%"></div></div>`;
+            }
+            html += `</div>`;
+        });
+        osdItems.innerHTML = html;
+    }
+
+    function handleOSDInput(type) {
+        if (!params.osdActive) return;
+        
+        const menu = OSD_MENUS[params.osdMenuIndex];
+        const item = menu.items[params.osdItemIndex];
+        const now = Tone.now();
+
+        switch (type) {
+            case 'up':
+                clickSynth.triggerAttackRelease("C5", "0.05s", now);
+                params.osdItemIndex = (params.osdItemIndex - 1 + menu.items.length) % menu.items.length;
+                break;
+            case 'down':
+                clickSynth.triggerAttackRelease("C5", "0.05s", now);
+                params.osdItemIndex = (params.osdItemIndex + 1) % menu.items.length;
+                break;
+            case 'nextMenu':
+                thunkSynth.triggerAttackRelease("0.1s", now);
+                params.osdMenuIndex = (params.osdMenuIndex + 1) % OSD_MENUS.length;
+                params.osdItemIndex = 0;
+                break;
+            case 'select':
+                thunkSynth.triggerAttackRelease("0.1s", now);
+                if (item.action) {
+                    if (item.action === 'resetPresets') {
+                        // This is a bit complex, maybe just reset params?
+                        // For now, let's just close the menu
+                        params.osdActive = false;
+                    }
+                    if (item.action === 'savePresetOSD') {
+                        savePresetBtn.click(); // Trigger the save logic
+                        params.osdActive = false;
+                    }
+                }
+                break;
+            case 'changeValue':
+                if (item.param) {
+                    zipperSynth.triggerAttackRelease("0.02s", now);
+                    const { min, max, step } = item;
+                    const range = max - min;
+                    let newValue = min + (timeline.valueAsNumber / 100) * range;
+                    // Snap to step
+                    newValue = Math.round(newValue / step) * step;
+                    newValue = Math.max(min, Math.min(max, newValue));
+                    params[item.param] = newValue;
+                    
+                    // Update the fader on the control panel too
+                    if (item.faderId) {
+                        const fader = document.getElementById(item.faderId);
+                        if (fader) fader.value = newValue;
+                    }
+                }
+                break;
+        }
+        renderOSD();
+    }
+    
+    // --- NEW: Power Logic ---
+    function setPowerState(isOn) {
+        if (!audioReady) {
+            console.warn("setPowerState called before audio is ready.");
+            status.textContent = "CLICK POWER TO START";
+            return;
+        }
+        params.powerOn = isOn;
+        params.powerOnTime = loopTime; // Use synced loop time
+        
+        const now = Tone.now();
+        if (isOn) {
+            powerBtn.classList.add('!bg-green-700/80', 'hover:!bg-green-600', '!border-green-600/50');
+            powerBtn.classList.remove('!bg-red-800/80', 'hover:!bg-red-700', '!border-red-600/50');
+            status.textContent = "AWAITING SIGNAL...";
+            params.sourceMode = 1; // Start with snow
+            powerWhine.start(now);
+            if (audioReady && staticNoise.state !== "started") {
+                staticNoise.start(now);
+            }
+            
+            if(params.sourceMode !== 1) staticNoise.stop(now + 0.1);
+
+            allInputs().forEach(el => el.disabled = false);
+            crop43Toggle.disabled = true;
+            if (params.sourceMode != 0) playBtn.disabled = true;
+            menuBtn.disabled = false; // Enable menu button
+        } else {
+            powerBtn.classList.remove('!bg-green-700/80', 'hover:!bg-green-600', '!border-green-600/50');
+            powerBtn.classList.add('!bg-red-800/80', 'hover:!bg-red-700', '!border-red-600/50');
+            status.textContent = "POWER OFF";
+            powerWhine.stop(now + 0.3);
+            if (audioReady && staticNoise.state !== "started") {
+                 staticNoise.start(now);
+            }
+            staticNoise.stop(now + 0.05); // Short burst of static on power off
+            stopAllSources(); // Stop video, streams, etc.
+            allInputs().forEach(el => el.disabled = true);
+            menuBtn.disabled = true; // Disable menu button
+            params.osdActive = false;
+            renderOSD();
+        }
+    }
+    
+    powerBtn.onclick = () => {
+        if (!audioReady) {
+            initAudio().then(() => {
+                if (audioReady) setPowerState(true);
+            }).catch(err => {
+                console.error("Error during initial power on:", err);
+                status.textContent = "ERR: AUDIO FAILED";
+            });
+        } else {
+            setPowerState(!params.powerOn);
+        }
+    };
+    
+    menuBtn.onclick = () => {
+        if (params.osdActive) {
+            params.osdActive = false;
+            thunkSynth.triggerAttackRelease("0.1s", Tone.now());
+        } else {
+            params.osdActive = true;
+            params.osdMenuIndex = 0;
+            params.osdItemIndex = 0;
+            thunkSynth.triggerAttackRelease("0.1s", Tone.now());
+        }
+        renderOSD();
+    };
+
+
+    function initGL() {
+        gl = canvas.getContext('webgl2');
+        if (!gl) {
+            status.textContent = "ERROR: WebGL 2.0 Required.";
+            return;
+        }
+        gl.getExtension('EXT_color_buffer_float');
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); 
+
+        function mkShader(type, src) {
+            const s = gl.createShader(type);
+            gl.shaderSource(s, src); gl.compileShader(s);
+            if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
+            return s;
+        }
+        function mkProg(vSrc, fSrc) {
+            const p = gl.createProgram();
+            gl.attachShader(p, mkShader(gl.VERTEX_SHADER, vSrc));
+            gl.attachShader(p, mkShader(gl.FRAGMENT_SHADER, fSrc));
+            gl.linkProgram(p);
+            if (!gl.getProgramParameter(p, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(p));
+            return p;
+        }
+
+        const vSrc = document.getElementById('vert-shader').text.trim();
+        progPhos = mkProg(vSrc, document.getElementById('frag-phosphor').text.trim());
+        progDisp = mkProg(vSrc, document.getElementById('frag-display').text.trim());
+
+        quad = gl.createVertexArray();
+        gl.bindVertexArray(quad);
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(0);
+        gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+
+        // Video Texture
+        vidTex = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, vidTex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); 
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0,0,0,255]));
+
+        // NEW: Burn-in Texture
+        burnInTex = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, burnInTex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0,0,0,0])); // Transparent black
+
+        window.addEventListener('resize', resize);
+        resize();
+        loadPresetList();
+        loop(0); // Start the loop
+    }
+
+    function initFBOs() {
+        const w = canvas.width;
+        const h = canvas.height;
+        function mkFBO() {
+            const t = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, t);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, w, h, 0, gl.RGBA, gl.HALF_FLOAT, null);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            const f = gl.createFramebuffer();
+            gl.bindFramebuffer(gl.FRAMEBUFFER, f);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+            return {t, f};
+        }
+        if (texA) gl.deleteTexture(texA); if (fboA) gl.deleteFramebuffer(fboA);
+        if (texB) gl.deleteTexture(texB); if (fboB) gl.deleteFramebuffer(fboB);
+        const a = mkFBO(); texA = a.t; fboA = a.f;
+        const b = mkFBO(); texB = b.t; fboB = b.f;
+    }
+
+    function resize() {
+        if (!gl) return;
+        const dpr = window.devicePixelRatio || 1;
+        const displayW = Math.round(canvas.clientWidth * dpr);
+        const displayH = Math.round(canvas.clientHeight * dpr);
+        if (canvas.width !== displayW || canvas.height !== displayH) {
+            canvas.width = displayW;
+            canvas.height = displayH;
+            initFBOs();
+            gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+    }
+
+
+    function loop(now) {
+        requestAnimationFrame(loop);
+        loopTime = now * 0.001; // Update global time
+        
+        // Don't render if audio isn't ready
+        if (!audioReady) return; 
+        
+        // Only render if power is on, or if power is off but still in the "fade out" animation
+        if (!params.powerOn && (loopTime - params.powerOnTime > 0.7)) return;
+        
+        // Don't render if CRT is bypassed
+        if (!params.crtOn || !gl) return;
+
+        frameCount++;
+
+        if (params.sourceMode === 0 && video.readyState >= 2) {
+            gl.activeTexture(gl.TEXTURE1);
+            gl.bindTexture(gl.TEXTURE_2D, vidTex);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
+        }
+
+        let vidW = video.videoWidth || 1;
+        let vidH = video.videoHeight || 1;
+        let beamSpeed = params.slowMo ? 0.008 : 1.0;
+        if (params.refresh === 120 && params.slowMo) beamSpeed *= 2.0;
+        beam = (beam + beamSpeed) % 1.0;
+        if (params.degaussActive) {
+            params.degaussTime = (loopTime - params.degaussStartTime) / 1.5;
+        }
+
+        // --- Pass 1: Phosphor ---
+        gl.bindFramebuffer(gl.FRAMEBUFFER, useA ? fboB : fboA);
+        gl.viewport(0,0,canvas.width,canvas.height);
+        gl.useProgram(progPhos);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, useA ? texA : texB); // Persistence
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, vidTex); // Video
+        gl.uniform1i(gl.getUniformLocation(progPhos, "u_persistence"), 0);
+        gl.uniform1i(gl.getUniformLocation(progPhos, "u_video"), 1);
+        gl.uniform1f(gl.getUniformLocation(progPhos, "u_time"), loopTime);
+        gl.uniform1f(gl.getUniformLocation(progPhos, "u_decay"), params.decay);
+        gl.uniform1f(gl.getUniformLocation(progPhos, "u_beam_glow"), params.glow);
+        gl.uniform1f(gl.getUniformLocation(progPhos, "u_beam_progress"), beam);
+        gl.uniform1i(gl.getUniformLocation(progPhos, "u_slow_mo"), params.slowMo);
+        gl.uniform2f(gl.getUniformLocation(progPhos, "u_video_res"), vidW, vidH);
+        gl.uniform1i(gl.getUniformLocation(progPhos, "u_crop_43"), params.crop43);
+        gl.uniform1f(gl.getUniformLocation(progPhos, "u_signal_strength"), params.signal);
+        gl.uniform1f(gl.getUniformLocation(progPhos, "u_ghosting"), params.ghost);
+        gl.uniform1f(gl.getUniformLocation(progPhos, "u_tracking_error"), params.tracking);
+        gl.uniform1i(gl.getUniformLocation(progPhos, "u_source_mode"), params.sourceMode);
+        gl.uniform1i(gl.getUniformLocation(progPhos, "u_signal_type"), params.signalType);
+        gl.uniform1f(gl.getUniformLocation(progPhos, "u_compression"), params.compression);
+        gl.uniform1i(gl.getUniformLocation(progPhos, "u_vcr_mode"), params.vcrMode);
+        gl.bindVertexArray(quad);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+        // --- Pass 2: Display ---
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0,0,canvas.width,canvas.height);
+        gl.useProgram(progDisp);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, useA ? texB : texA); // Result from Pass 1
+        gl.activeTexture(gl.TEXTURE2); // NEW: Burn-in texture
+        gl.bindTexture(gl.TEXTURE_2D, burnInTex);
+        gl.uniform1i(gl.getUniformLocation(progDisp, "u_texture"), 0);
+        gl.uniform2f(gl.getUniformLocation(progDisp, "u_resolution"), canvas.width, canvas.height);
+        gl.uniform1f(gl.getUniformLocation(progDisp, "u_time"), loopTime);
+        // Display
+        gl.uniform1f(gl.getUniformLocation(progDisp, "u_curvature"), params.curve);
+        gl.uniform1i(gl.getUniformLocation(progDisp, "u_refresh_rate"), params.refresh);
+        gl.uniform1i(gl.getUniformLocation(progDisp, "u_frame"), frameCount);
+        gl.uniform1f(gl.getUniformLocation(progDisp, "u_bloom"), params.bloom);
+        // OSD
+        gl.uniform1f(gl.getUniformLocation(progDisp, "u_brightness"), params.brightness);
+        gl.uniform1f(gl.getUniformLocation(progDisp, "u_contrast"), params.contrast);
+        gl.uniform1f(gl.getUniformLocation(progDisp, "u_saturation"), params.saturation);
+        gl.uniform1f(gl.getUniformLocation(progDisp, "u_tint"), params.tint);
+        gl.uniform1f(gl.getUniformLocation(progDisp, "u_sharpness"), params.sharpness);
+        // Physics
+        gl.uniform1i(gl.getUniformLocation(progDisp, "u_res_240p"), params.res240p);
+        gl.uniform1i(gl.getUniformLocation(progDisp, "u_interlace"), params.interlace);
+        gl.uniform1f(gl.getUniformLocation(progDisp, "u_convergence"), params.convergence);
+        gl.uniform1i(gl.getUniformLocation(progDisp, "u_phosphor_mask"), params.mask);
+        // Power
+        gl.uniform1i(gl.getUniformLocation(progDisp, "u_power_on"), params.powerOn);
+        gl.uniform1f(gl.getUniformLocation(progDisp, "u_power_on_time"), loopTime - params.powerOnTime);
+        gl.uniform1i(gl.getUniformLocation(progDisp, "u_degauss_active"), params.degaussActive);
+        gl.uniform1f(gl.getUniformLocation(progDisp, "u_degauss_time"), params.degaussTime);
+        // Faults
+        gl.uniform1f(gl.getUniformLocation(progDisp, "u_v_hold"), params.vHold);
+        gl.uniform1i(gl.getUniformLocation(progDisp, "u_weak_red"), params.weakRed);
+        gl.uniform1i(gl.getUniformLocation(progDisp, "u_weak_green"), params.weakGreen);
+        gl.uniform1i(gl.getUniformLocation(progDisp, "u_weak_blue"), params.weakBlue);
+        gl.uniform1i(gl.getUniformLocation(progDisp, "u_burn_in_tex"), 2);
+        gl.uniform1f(gl.getUniformLocation(progDisp, "u_burn_in_amount"), params.burnInAmount);
+        
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        useA = !useA;
+    }
+
+    function formatTime(s) {
+        if (isNaN(s)) return "00:00";
+        const m = Math.floor(s / 60);
+        s = Math.floor(s % 60);
+        return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    }
+    
+    function stopAllSources() {
+        video.pause();
+        video.removeAttribute('src');
+        if (video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
+        }
+        params.sourceMode = 1;
+        webcamBtn.classList.remove('active');
+        testPatternBtn.classList.remove('active');
+        
+        if (params.powerOn) {
+            playBtn.disabled = true;
+            timeline.disabled = true;
+            status.textContent = "AWAITING SIGNAL...";
+            if (audioReady && staticNoise.state !== "started") {
+                staticNoise.start(Tone.now());
+            }
+        }
+        
+        crop43Toggle.disabled = true;
+        crop43Toggle.checked = false;
+        params.crop43 = false;
+        curTimeTxt.textContent = "00:00";
+        durTimeTxt.textContent = "00:00";
+        timeline.value = 0;
+    }
+
+    function onVideoReady() {
+        // We call stopAllSources first to kill static, reset buttons, etc.
+        stopAllSources();
+        
+        // Now, set the state for video playback
+        params.sourceMode = 0;
+        status.textContent = "SIGNAL LOCKED";
+        playBtn.disabled = false;
+        timeline.disabled = false;
+        curTimeTxt.textContent = "00:00";
+        durTimeTxt.textContent = formatTime(video.duration || 0);
+        timeline.max = video.duration || 100;
+        
+        if (audioReady && staticNoise.state === "started") {
+            staticNoise.stop(Tone.now() + 0.01);
+        }
+        
+        video.play().catch(() => status.textContent = "PRESS PLAY");
+    }
+
+    // --- Video / Input Event Listeners ---
+    video.addEventListener('loadedmetadata', () => {
+        if (video.duration !== Infinity) {
+            durTimeTxt.textContent = formatTime(video.duration || 0);
+            timeline.max = video.duration || 100;
+            timeline.disabled = false;
+        }
+    });
+    video.addEventListener('timeupdate', () => {
+        if (params.osdActive) return; // Don't update timeline if OSD is active
+        if (!timeline.matches(':active') && video.duration !== Infinity) {
+            timeline.value = video.currentTime;
+            curTimeTxt.textContent = formatTime(video.currentTime);
+        }
+    });
+    video.addEventListener('play', () => {
+        document.getElementById('play-icon').classList.add('hidden');
+        document.getElementById('pause-icon').classList.remove('hidden');
+    });
+    video.addEventListener('pause', () => {
+        document.getElementById('play-icon').classList.remove('hidden');
+        document.getElementById('pause-icon').classList.add('hidden');
+    });
+    video.addEventListener('error', (e) => {
+        if (status.textContent.startsWith("ERR:")) return;
+        const err = video.error;
+        console.error("Video Error Details:", err);
+        if(window.location.protocol === 'file:' && (video.src.startsWith('http') || (video.currentSrc && video.currentSrc.startsWith('http')))) {
+            status.textContent = "ERR: RUN FROM LOCAL SERVER";
+        } else {
+            const errCode = err ? err.code : 'UNKNOWN';
+            status.textContent = `ERR: CODE ${errCode} (LIKELY CORS)`;
+        }
+        stopAllSources();
+    });
+    video.addEventListener('ended', stopAllSources);
+
+    playBtn.onclick = () => {
+        if (params.osdActive) {
+            handleOSDInput('select');
+            return;
+        }
+        video.paused ? video.play() : video.pause();
+    };
+    timeline.oninput = (e) => {
+        if (params.osdActive) {
+            handleOSDInput('changeValue');
+            return;
+        }
+        video.currentTime = e.target.value;
+    };
+    document.getElementById('volume-range').oninput = (e) => video.volume = e.target.value;
+
+    // --- Fullscreen Logic (MODIFIED) ---
+    function toggleTheatreMode() {
+        if (document.fullscreenElement === tvSetElement) {
+            document.exitFullscreen();
+        } else if (!document.fullscreenElement) { // Only enter if nothing else is fullscreen
+            tvSetElement.requestFullscreen();
+        }
+    }
+    
+    function toggleCRTFullScreen() {
+        if (document.fullscreenElement === screenContainer) {
+            document.exitFullscreen();
+        } else if (!document.fullscreenElement) { // Only enter if nothing else is fullscreen
+            screenContainer.requestFullscreen();
+        }
+    }
+    
+    function updateTheatreIcon() {
+        if (document.fullscreenElement === tvSetElement) {
+            fsEnterIcon.classList.add('hidden');
+            fsExitIcon.classList.remove('hidden');
+        } else {
+            fsEnterIcon.classList.remove('hidden');
+            fsExitIcon.classList.add('hidden');
+        }
+    }
+    
+    function updateCRTIcon() {
+        if (document.fullscreenElement === screenContainer) {
+            crtFsEnterIcon.classList.add('hidden');
+            crtFsExitIcon.classList.remove('hidden');
+        } else {
+            crtFsEnterIcon.classList.remove('hidden');
+            crtFsExitIcon.classList.add('hidden');
+        }
+    }
+
+    fullscreenBtn.onclick = toggleTheatreMode;
+    crtFullscreenBtn.onclick = toggleCRTFullScreen; // NEW
+    document.addEventListener('fullscreenchange', () => {
+        updateTheatreIcon();
+        updateCRTIcon();
+    });
+
+
+    // --- Input Sources Listeners ---
+    fileUploader.onchange = (e) => {
+        if (e.target.files[0]) {
+            stopAllSources();
+            video.src = URL.createObjectURL(e.target.files[0]);
+            video.oncanplay = onVideoReady;
+            status.textContent = "LOADING FILE...";
+        }
+    };
+
+    function loadUrl(url) {
+        if (!url) return;
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            status.textContent = "ERR: YOUTUBE NOT SUPPORTED";
+            return;
+        }
+        stopAllSources();
+        video.crossOrigin = "anonymous";
+        video.src = url;
+        video.oncanplay = onVideoReady;
+        status.textContent = "TUNING...";
+    }
+
+    async function startScreenShare() {
+        try {
+            const stream = await navigator.mediaDevices.getDisplayMedia({ 
+                video: { cursor: 'always' }, 
+                audio: { echoCancellation: true, noiseSuppression: true } 
+            });
+            stopAllSources();
+            params.sourceMode = 0;
+            video.srcObject = stream;
+            video.onloadedmetadata = () => {
+                video.play();
+                status.textContent = "SIGNAL LOCKED // SCREEN SHARE";
+                playBtn.disabled = false;
+                timeline.disabled = true;
+                curTimeTxt.textContent = "--:--";
+                durTimeTxt.textContent = "LIVE";
+                crop43Toggle.disabled = false;
+                if (audioReady) staticNoise.stop(Tone.now() + 0.01);
+            };
+            stream.getVideoTracks()[0].onended = stopAllSources;
+        } catch(err) {
+            console.error("Screen Share Error: ", err);
+            status.textContent = "ERR: SCREEN SHARE FAILED";
+            stopAllSources();
+        }
+    }
+    screenShareBtn.onclick = startScreenShare;
+
+    async function startWebcam() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: true, 
+                audio: true 
+            });
+            stopAllSources();
+            params.sourceMode = 0;
+            video.srcObject = stream;
+            video.onloadedmetadata = () => {
+                video.play();
+                status.textContent = "SIGNAL LOCKED // WEBCAM";
+                playBtn.disabled = false;
+                timeline.disabled = true;
+                curTimeTxt.textContent = "--:--";
+                durTimeTxt.textContent = "LIVE";
+                webcamBtn.classList.add('active');
+                if (audioReady) staticNoise.stop(Tone.now() + 0.01);
+            };
+            stream.getVideoTracks()[0].onended = stopAllSources;
+        } catch(err) {
+            console.error("Webcam Error: ", err);
+            status.textContent = "ERR: WEBCAM FAILED";
+            stopAllSources();
+        }
+    }
+    webcamBtn.onclick = startWebcam;
+
+    testPatternBtn.onclick = () => {
+        stopAllSources();
+        params.sourceMode = 2;
+        status.textContent = "SIGNAL LOCKED // TEST PATTERN";
+        testPatternBtn.classList.add('active');
+        if (audioReady) staticNoise.stop(Tone.now() + 0.01);
+    };
+
+    loadUrlBtn.onclick = () => loadUrl(urlInput.value.trim());
+    channelBtns.forEach((btn, index) => {
+        btn.onclick = () => {
+            if (params.osdActive) {
+                if (index === 0) handleOSDInput('up');
+                if (index === 1) handleOSDInput('down');
+                if (index === 3) handleOSDInput('nextMenu');
+                return;
+            }
+            if (btn.id === 'test-pattern-btn') {
+                testPatternBtn.onclick();
+            } else {
+                loadUrl(btn.dataset.url);
+            }
+        }
+    });
+
+    // --- CRT Physics Sliders ---
+    document.getElementById('decay-range').oninput = (e) => params.decay = +e.target.value;
+    document.getElementById('glow-range').oninput = (e) => params.glow = +e.target.value;
+    document.getElementById('bloom-range').oninput = (e) => params.bloom = +e.target.value;
+    // Saturation & Tint are now controlled by OSD
+    document.getElementById('curve-range').oninput = (e) => params.curve = +e.target.value;
+    document.getElementById('slow-beam-toggle').onchange = (e) => params.slowMo = e.target.checked;
+    document.querySelectorAll('input[name="refresh"]').forEach(r => {
+        r.onchange = (e) => params.refresh = +e.target.value;
+    });
+    document.getElementById('res-240p-toggle').onchange = (e) => params.res240p = e.target.checked;
+    crop43Toggle.onchange = (e) => params.crop43 = e.target.checked;
+    
+    // --- Signal Listeners ---
+    document.querySelectorAll('input[name="signal-type"]').forEach(r => {
+        r.onchange = (e) => {
+            params.signalType = +e.target.value;
+            // Auto-adjust params for signal type
+            if (params.signalType === 3) { // RF
+                params.signal = 0.85;
+                params.ghost = 0.05;
+            } else if (params.signalType === 2) { // Composite
+                params.signal = 0.95;
+                params.ghost = 0.01;
+            } else { // RGB or S-Video
+                params.signal = 1.0;
+                params.ghost = 0.0;
+            }
+            document.getElementById('signal-range').value = params.signal;
+            document.getElementById('ghost-range').value = params.ghost;
+        };
+    });
+    document.getElementById('signal-range').oninput = (e) => params.signal = +e.target.value;
+    document.getElementById('ghost-range').oninput = (e) => params.ghost = +e.target.value;
+    document.getElementById('compress-range').oninput = (e) => params.compression = +e.target.value;
+
+    // --- Physics Listeners ---
+    document.getElementById('interlace-toggle').onchange = (e) => params.interlace = e.target.checked;
+    document.getElementById('converge-range').oninput = (e) => params.convergence = +e.target.value;
+    document.querySelectorAll('input[name="mask"]').forEach(r => {
+        r.onchange = (e) => params.mask = +e.target.value;
+    });
+
+    trackingBtn.onclick = () => {
+        if (params.trackingTimeout) clearTimeout(params.trackingTimeout);
+        params.tracking = 1.0;
+        params.trackingTimeout = setTimeout(() => { params.tracking = 0.0; }, 500);
+    };
+    
+    degaussBtn.onclick = () => {
+        if (params.degaussActive) return; // Don't re-trigger
+        params.degaussActive = true;
+        params.degaussStartTime = loopTime;
+        params.degaussTime = 0.0;
+        
+        const now = Tone.now();
+        degaussSynth.triggerAttackRelease("C2", "0.5s", now);
+        degaussSynth.triggerAttackRelease("G2", "0.4s", now + 0.05);
+        degaussSynth.triggerAttackRelease("C3", "0.3s", now + 0.1);
+        degaussSynth.set({ "detune": 1200 });
+        // FIX: rampTo is on the 'detune' property
+        degaussSynth.detune.rampTo(0, 1.0, now + 0.01);
+        
+        setTimeout(() => { params.degaussActive = false; }, 1500);
+    };
+    
+    // --- Fault Listeners ---
+    document.getElementById('vhold-range').oninput = (e) => params.vHold = +e.target.value;
+    document.getElementById('hhold-range').oninput = (e) => {
+        params.tint = +e.target.value;
+        renderOSD(); // Update OSD if open
+    };
+    document.getElementById('weak-red-toggle').onchange = (e) => params.weakRed = e.target.checked;
+    document.getElementById('weak-green-toggle').onchange = (e) => params.weakGreen = e.target.checked;
+    document.getElementById('weak-blue-toggle').onchange = (e) => params.weakBlue = e.target.checked;
+    document.getElementById('vcr-mode-toggle').onchange = (e) => params.vcrMode = e.target.checked;
+    document.getElementById('burn-in-range').oninput = (e) => params.burnInAmount = +e.target.value;
+
+    burnInUploader.onchange = (e) => {
+        if (e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    gl.activeTexture(gl.TEXTURE2);
+                    gl.bindTexture(gl.TEXTURE_2D, burnInTex);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+                    status.textContent = "BURN-IN IMAGE LOADED";
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    };
+    
+    // --- Environment Listeners ---
+    document.querySelectorAll('input[name="environment"]').forEach(r => {
+        r.onchange = (e) => {
+            bodyEl.classList.remove('env-studio', 'env-den', 'env-arcade');
+            if (e.target.value === 'den') bodyEl.classList.add('env-den');
+            else if (e.target.value === 'arcade') bodyEl.classList.add('env-arcade');
+            else bodyEl.classList.add('env-studio');
+        };
+    });
+
+
+    // --- Main CRT Bypass Toggle (Updated) ---
+    crtOnToggle.onchange = (e) => {
+        params.crtOn = e.target.checked;
+        if (params.crtOn) {
+            canvas.classList.remove('hidden');
+            video.classList.add('hidden');
+            physicsControlsPanel.classList.remove('opacity-50', 'pointer-events-none');
+            displayControls.classList.remove('opacity-50', 'pointer-events-none');
+            resize();
+        } else {
+            canvas.classList.add('hidden');
+            video.classList.remove('hidden');
+            physicsControlsPanel.classList.add('opacity-50', 'pointer-events-none');
+            displayControls.classList.add('opacity-50', 'pointer-events-none');
+        }
+    };
+
+    // --- Glare Effect ---
+    document.getElementById('screen-viewport').onmousemove = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const xPercent = (x / rect.width) * 100;
+        const yPercent = (y / rect.height) * 100;
+        glareOverlay.style.backgroundPosition = `${xPercent}% ${yPercent}%`;
+    };
+    
+    // --- Preset Logic (Heavily Updated) ---
+    function getSettings() {
+        return {
+            decay: params.decay, glow: params.glow, bloom: params.bloom, curve: params.curve,
+            slowMo: params.slowMo, refresh: params.refresh, res240p: params.res240p,
+            crtOn: params.crtOn, signal: params.signal, ghost: params.ghost, 
+            interlace: params.interlace, convergence: params.convergence, mask: params.mask,
+            signalType: params.signalType, compression: params.compression, vHold: params.vHold,
+            weakRed: params.weakRed, weakGreen: params.weakGreen, weakBlue: params.weakBlue,
+            vcrMode: params.vcrMode, burnInAmount: params.burnInAmount,
+            brightness: params.brightness, contrast: params.contrast, saturation: params.saturation,
+            tint: params.tint, sharpness: params.sharpness
+        };
+    }
+    
+    function applyPreset(settings) {
+        if (!settings) return;
+        Object.assign(params, settings);
+        
+        // Update all UI elements
+        document.getElementById('decay-range').value = params.decay;
+        document.getElementById('glow-range').value = params.glow;
+        document.getElementById('bloom-range').value = params.bloom;
+        document.getElementById('curve-range').value = params.curve;
+        document.getElementById('slow-beam-toggle').checked = params.slowMo;
+        document.querySelector(`input[name="refresh"][value="${params.refresh}"]`).checked = true;
+        document.getElementById('res-240p-toggle').checked = params.res240p;
+        crtOnToggle.checked = params.crtOn;
+        crtOnToggle.dispatchEvent(new Event('change'));
+        
+        document.querySelector(`input[name="signal-type"][value="${params.signalType}"]`).checked = true;
+        document.getElementById('signal-range').value = params.signal;
+        document.getElementById('ghost-range').value = params.ghost;
+        document.getElementById('compress-range').value = params.compression;
+        
+        document.getElementById('interlace-toggle').checked = params.interlace;
+        document.getElementById('converge-range').value = params.convergence;
+        document.querySelector(`input[name="mask"][value="${params.mask}"]`).checked = true;
+
+        document.getElementById('vhold-range').value = params.vHold;
+        document.getElementById('hhold-range').value = params.tint; // H-Hold is Tint
+        document.getElementById('weak-red-toggle').checked = params.weakRed;
+        document.getElementById('weak-green-toggle').checked = params.weakGreen;
+        document.getElementById('weak-blue-toggle').checked = params.weakBlue;
+        document.getElementById('vcr-mode-toggle').checked = params.vcrMode;
+        document.getElementById('burn-in-range').value = params.burnInAmount;
+        
+        // OSD params are set, but no UI elements to update (except H-Hold)
+        renderOSD(); // Update OSD in case it's open
+    }
+
+    function loadPresetList() {
+        presetSelect.innerHTML = '<option value="">-- Select Preset --</option>';
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('pvm_preset_')) {
+                const name = key.replace('pvm_preset_', '');
+                const option = new Option(name, key);
+                presetSelect.add(option);
+            }
+        }
+    }
+    
+    savePresetBtn.onclick = () => {
+        const name = presetNameInput.value.trim();
+        if (!name) {
+            status.textContent = "ERR: PRESET NAME REQ'D";
+            return;
+        }
+        const key = `pvm_preset_${name}`;
+        const settings = getSettings();
+        localStorage.setItem(key, JSON.stringify(settings));
+        loadPresetList();
+        presetSelect.value = key;
+        presetNameInput.value = "";
+        status.textContent = `PRESET '${name}' SAVED`;
+    };
+    
+    presetSelect.onchange = (e) => {
+        const key = e.target.value;
+        if (!key) return;
+        try {
+            const settings = JSON.parse(localStorage.getItem(key));
+            applyPreset(settings);
+            status.textContent = `PRESET '${key.replace('pvm_preset_', '')}' LOADED`;
+        } catch (err) {
+            console.error("Failed to load preset:", err);
+            status.textContent = "ERR: FAILED TO LOAD PRESET";
+        }
+    };
+    
+    // --- NEW: Audio Feedback Listeners ---
+    document.querySelectorAll('.btn, .btn-icon, .channel-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (audioReady && params.powerOn) clickSynth.triggerAttackRelease("G4", "0.05s", Tone.now());
+        });
+    });
+    document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(toggle => {
+        toggle.addEventListener('change', () => {
+            if (audioReady && params.powerOn) thunkSynth.triggerAttackRelease("0.1s", Tone.now());
+        });
+    });
+    document.querySelectorAll('input[type="range"]').forEach(fader => {
+        fader.addEventListener('input', () => {
+            if (audioReady && params.powerOn && fader.matches(':active')) { // Only on active drag
+                zipperSynth.triggerAttackRelease("0.02s", Tone.now());
+            }
+        });
+    });
+
+
+    initGL();
+</script>
+</body>
+</html>
