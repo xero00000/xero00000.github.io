@@ -4,8 +4,6 @@ try it--> (https://crtemu.netlify.app/)
 
 This is a comprehensive, browser-based WebGL simulation of a Professional Video Monitor (PVM) and various retro signal types. It is built as a single, self-contained HTML file that uses a two-pass shader pipeline, Tone.js for audio synthesis, and an interactive HTML/CSS overlay for the UI.
 
-(You can replace the image above with a screenshot of the simulator in action.)
-
 ⚠️ How to Run
 
 This project is a single .html file but cannot be run by opening the file directly in your browser (e.g., from a file:///... path).
