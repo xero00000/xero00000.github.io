@@ -24,7 +24,7 @@ Install the "Live Server" extension in Visual Studio Code.
 
 Open the project folder in VS Code.
 
-Right-click the crt_simulator_v2.html file and select "Open with Live Server".
+Right-click the index.html file and select "Open with Live Server".
 
 The Python Way:
 
@@ -38,7 +38,7 @@ python -m http.server (for Python 3)
 
 python -m SimpleHTTPServer (for Python 2)
 
-Open your browser and go to http://localhost:8000/crt_simulator_v2.html.
+Open your browser and go to http://localhost:8000/index.html.
 
 Features
 
