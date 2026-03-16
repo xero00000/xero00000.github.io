@@ -1,125 +1,139 @@
-Retro PVM Simulator
+# Retro PVM Simulator
 
 ![Screenshot_20251112_014444_Chrome](https://github.com/user-attachments/assets/2ef5ad13-296f-44ee-a1af-95bd50c297bb)
 
 ![Screenshot_20251112_014701_Chrome](https://github.com/user-attachments/assets/ce5f57eb-a5cd-46de-a487-5f1a80735be3)
 
-![Screenshot_20251112_014949_Chrome](https://github.com/user-attachments/assets/96854ea2-7993-455d-b03d-b7e9f0f5ecd5)
+**[▶ Live Demo](https://xero00000.github.io/)**
 
-![Screenshot_20251112_014915_Chrome](https://github.com/user-attachments/assets/3c7c169b-abc6-4f66-9e00-099a3b313df5)
+A comprehensive, browser-based WebGL2 simulation of a Professional Video Monitor (PVM) and retro signal types. Built as a three-file app (`index.html` + `style.css` + `app.js`) using a two-pass shader pipeline, Tone.js for synthesized audio, and an interactive HTML/CSS control panel.
 
-try it--> (https://xero00000.github.io/)
+---
 
-This is a comprehensive, browser-based WebGL simulation of a Professional Video Monitor (PVM) and various retro signal types. It is built as a single, self-contained HTML file that uses a two-pass shader pipeline, Tone.js for audio synthesis, and an interactive HTML/CSS overlay for the UI.
+## ⚠️ How to Run
 
-⚠️ How to Run
+The app **cannot** be opened directly from `file://` — it must be served by a local web server due to browser security policies required for video textures and screen capture.
 
-This project is a single .html file but cannot be run by opening the file directly in your browser (e.g., from a file:///... path).
+**VS Code (easiest):** Install the [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension → right-click `index.html` → *Open with Live Server*
 
-It must be served by a local web server due to browser security policies (CORS) that are required for loading video textures and other cross-origin resources.
+**Node.js / npx:**
+```bash
+npx serve . -p 8080
+```
 
-The Easiest Way (Using VS Code):
+**Python:**
+```bash
+python -m http.server 8080
+```
+Then open `http://localhost:8080`.
 
-Install the "Live Server" extension in Visual Studio Code.
+---
 
-Open the project folder in VS Code.
+## Features
 
-Right-click the index.html file and select "Open with Live Server".
+### 🖥️ Screen Overlay Mode *(new)*
+Turn the entire CRT effect pipeline into a **fullscreen overlay** over your desktop or any window:
+1. Power on the PVM.
+2. Click the **⊡ monitor icon** in the transport bar (or press **`O`**).
+3. A screen-capture picker appears — choose your screen or window.
+4. The browser goes fullscreen and applies all CRT effects (scanlines, phosphor mask, curvature, signal degradation, bloom) live to your screen.
+5. Move the mouse (or touch on mobile) to reveal the floating **HUD** — quick controls to cycle signal type, toggle CRT effects, toggle phosphor persistence, and exit.
+6. Press **`Esc`** or **`O`** to exit.
 
-The Python Way:
+### 📺 Visual Simulation
+- **WebGL 2.0 Two-Pass Pipeline** — phosphor persistence pass + display post-processing pass
+- **Phosphor Masks** — Aperture Grille, Shadow Mask, Slot Mask
+- **Signal Degradation Modes:**
+  - **RGB** — clean digital
+  - **S-Video** — chroma blur
+  - **Composite** — dot crawl, color bleed
+  - **RF (Antenna)** — heavy composite + moving interference bars
+- **H-Sync Jitter** — per-scanline horizontal instability
+- **Ghosting, Compression Artifacts, Signal Strength** sliders
+- **Convergence** — misalign R/G/B channels
+- **Scanlines** — 240p progressive and 480i interlaced
+- **Screen Curvature** (barrel distortion)
+- **Vignette** — realistic corner darkening
+- **Phosphor Bloom** — overbright pixel glow
+- **CRT Warmup** — brightness & saturation ramp up over 30 seconds on power-on
+- **Power Animations:**
+  - *Power ON:* white dot fade-in
+  - *Power OFF:* image collapses to a bright raster line → white dot → black
 
-Open your terminal or command prompt.
+### 🎛️ Hardware Faults & Quirks
+| Fault | Effect |
+|---|---|
+| Vertical Hold | Rolling picture |
+| Tint (H-Hold) | Color hue shift |
+| Failing Color Guns | Weaken R, G, or B independently |
+| VCR Mode | Head-switching noise at bottom of frame |
+| VCR Tracking | Injects a tracking error band |
+| Screen Burn-In | Upload an image as a permanent faint overlay |
+| Degauss | Wobble animation + authentic "thwung" sound |
 
-Navigate to the folder containing the project.
+### 🔄 Black Frame Insertion (BFI)
+Optimized for **180 Hz monitors**:
+- **60 Hz** — standard, no BFI
+- **120 Hz BFI** — every other frame is black (reduces motion blur)
+- **180 Hz BFI** — 2 of every 3 frames are black (maximum motion clarity)
+- **Auto** — detects your monitor's actual refresh rate at startup
+- **Duty Cycle slider** — fine-tune the ratio of lit vs black frames (10–100%)
 
-Run one of the following commands:
+### 🎬 Input Sources
+| Source | Notes |
+|---|---|
+| Local video file | mp4, webm, etc. |
+| Direct video URL | Must be CORS-accessible |
+| Screen Share | Live capture with optional 4:3 crop |
+| Webcam | Live capture |
+| Image / GIF | Static images and animated GIFs |
+| Test Patterns | SMPTE Color Bars, Multiburst, Crosshatch, Grayscale Ramp |
+| Preset Channels | 3 built-in sample video channels |
 
-python -m http.server (for Python 3)
+### 🔊 Audio Simulation (Tone.js)
+- **15.7 kHz power whine** — synthesized CRT flyback frequency
+- **Static hiss** — on no-signal / power-on
+- **Degauss sound** — synthesized harmonic "thwung"
+- **UI sounds** — click, thunk, fader zipper
+- **Speaker EQ** — EQ3 filter makes video audio sound like built-in TV speakers
 
-python -m SimpleHTTPServer (for Python 2)
+### 🖥️ OSD (On-Screen Display)
+A PVM-authentic on-screen menu for Brightness, Contrast, Saturation, Tint, Sharpness. Navigate with arrow keys or channel buttons.
 
-Open your browser and go to http://localhost:8000/index.html.
+### 💾 Preset System
+- Save/load named presets to **localStorage**
+- **Export** all presets as a `.json` file
+- **Import** presets from a `.json` file
 
-Features
+### 🌐 Environment Themes
+- **Studio** — neutral dark grid
+- **80s Den** — warm wood-paneled ambient light
+- **Arcade** — deep checkerboard colored ambience
 
-This simulator includes a deep set of features to replicate the look, feel, and quirks of retro hardware:
+---
 
-Visual Simulation
+## Keyboard Shortcuts
 
-WebGL 2.0 Shader Pipeline: A two-pass system simulates phosphor persistence and final display output.
+| Key | Action |
+|---|---|
+| `P` | Toggle Power |
+| `O` | Toggle Screen Overlay Mode |
+| `M` | Toggle OSD Menu |
+| `Space` | Play / Pause (or OSD Select) |
+| `F` | Theatre Mode (fullscreen with controls) |
+| `C` | CRT-Only Fullscreen |
+| `T` | Test Pattern |
+| `D` | Degauss |
+| `1` / `2` / `3` | Load preset channel |
+| `↑` / `↓` | Navigate OSD menu items |
+| `←` / `→` | Adjust OSD value |
+| `Tab` | Next OSD menu |
+| `Esc` | Close OSD / Exit Overlay |
 
-Accurate Phosphor Masks: Selectable Aperture Grille, Shadow Mask, and Slot Mask patterns.
+---
 
-Signal Degradation:
-
-Signal Type: RGB (Clean), S-Video (Chroma Blur), Composite (Dot Crawl/Bleed), and RF (Heavy Noise).
-
-Ghosting: Simulates poor cable reception.
-
-Noise: "Signal Strength" fader adds procedural snow.
-
-Compression: Fader to simulate MPEG block artifacts.
-
-Advanced Physics:
-
-Scanlines: 240p (progressive) and 480i (interlaced) modes.
-
-Convergence: Fader to misalign R/G/B channels.
-
-Degauss: An interactive degauss button with sound and wobble animation.
-
-Power: Full power-on (dot fade-in) and power-off (dot collapse) animation.
-
-Environment:
-
-Selectable room themes (Studio, 80s Den, Arcade).
-
-Dynamic screen glare that reacts to mouse position.
-
-Audio Simulation (via Tone.js)
-
-Hardware Sounds: Synthesized 15kHz power-on whine, static hiss, and degauss "thwung".
-
-UI Sounds: Clicks, thunks, and fader "zipper" sounds for all controls.
-
-Speaker Simulation: A master EQ processes video audio to sound "tinny" like built-in TV speakers.
-
-Hardware Faults & Quirks
-
-Vertical Hold: Fader to make the picture roll.
-
-Tint (H-Hold): Fader to adjust color tint.
-
-Failing Guns: Toggles to weaken the R, G, or B color channels.
-
-VCR Mode: Simulates VCR head-switching noise.
-
-Tracking: "Adjust" button injects a VCR tracking error bar.
-
-Screen Burn-In: Upload any image to use as a faint, persistent burn-in layer.
-
-UI & Functionality
-
-PVM-Style UI: All controls are housed in a physical-style side panel.
-
-Interactive OSD: A fully functional On-Screen Display to control Brightness, Contrast, Saturation, Tint, and Sharpness.
-
-Input Sources:
-
-Local Video File
-
-Direct Video URL
-
-Screen Share (with 4:3 crop toggle)
-
-Webcam
-
-SMPTE Test Pattern
-
-Preset System: Save and load all settings to/from localStorage.
-
-Fullscreen Modes:
-
-Theatre Mode: Fullscreens the entire application (screen + controls).
-
-CRT-Only Mode: Fullscreens only the 4:3 viewport for an immersive experience.
+## Tech Stack
+- **Rendering:** WebGL 2.0 (GLSL ES 3.00), two-pass FBO ping-pong
+- **Audio:** [Tone.js](https://tonejs.github.io/) v14.7.77
+- **UI Styling:** [Tailwind CSS](https://tailwindcss.com/) (CDN) + custom `style.css`
+- **Structure:** Vanilla HTML5 + ES2020 JS (`app.js`) — zero build step required
