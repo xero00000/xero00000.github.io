@@ -1,0 +1,367 @@
+/* CRT Lab Pro 3 mobile layout hardening.
+   Loaded after style.css so narrow screens always get a true single-column UI. */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (max-width: 900px) {
+  html, body, .app-shell, .workspace, .monitor-column, .monitor-wrap,
+  .monitor-shell, .screen-bezel, .transport, .quick-presets, .scopes,
+  .inspector, .source-block, .control-scroll, .control-page, .inspector-footer {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  body {
+    overflow-x: clip !important;
+  }
+
+  .app-shell {
+    margin: 0 !important;
+    overflow: clip;
+  }
+
+  .workspace {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    gap: 12px !important;
+  }
+
+  .monitor-column,
+  .inspector {
+    flex: 0 0 auto !important;
+  }
+
+  .inspector {
+    display: block !important;
+    position: static !important;
+    inset: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 0 !important;
+  }
+
+  .control-scroll {
+    display: block !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .control-page {
+    min-height: 0 !important;
+  }
+
+  .control-page.active {
+    display: block !important;
+  }
+
+  .source-block,
+  .tabs,
+  .inspector-footer {
+    box-sizing: border-box;
+  }
+
+  .preset-strip {
+    max-width: 100%;
+  }
+
+  .scope-grid,
+  .scope-readout {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .app-shell {
+    padding-left: max(8px, var(--safe-left)) !important;
+    padding-right: max(8px, var(--safe-right)) !important;
+    padding-bottom: calc(14px + var(--safe-bottom)) !important;
+  }
+
+  .topbar {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .brand-wrap {
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .eyebrow {
+    display: none;
+  }
+
+  h1 {
+    font-size: 20px !important;
+    white-space: nowrap;
+  }
+
+  .home-link {
+    flex: 0 0 auto;
+  }
+
+  .top-actions {
+    justify-content: flex-end;
+    gap: 5px;
+  }
+
+  .top-actions .pill-btn {
+    min-width: 0;
+    min-height: 38px;
+  }
+
+  .monitor-shell {
+    padding: 7px !important;
+  }
+
+  .monitor-topline {
+    min-width: 0;
+  }
+
+  .model-label,
+  .signal-led {
+    font-size: 8px !important;
+    letter-spacing: .07em !important;
+  }
+
+  .screen-bezel {
+    padding: 6px !important;
+  }
+
+  .monitor-controls {
+    display: flex !important;
+    align-items: center;
+    gap: 8px !important;
+  }
+
+  .control-cluster {
+    flex: 0 0 auto;
+  }
+
+  .speaker-grille {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .hardware-btn,
+  .source-btn,
+  .icon-btn,
+  .mini-btn,
+  .footer-btn,
+  .tool-grid button,
+  .wide-btn {
+    min-height: 44px !important;
+  }
+
+  .transport {
+    padding: 9px !important;
+  }
+
+  .transport-left {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(3, 44px) minmax(0, 1fr);
+    justify-content: stretch !important;
+  }
+
+  .transport-left .timecode {
+    min-width: 0 !important;
+    align-self: center;
+    text-align: right;
+    font-size: 9px !important;
+  }
+
+  .transport-right {
+    width: 100%;
+  }
+
+  .volume-wrap {
+    width: 100%;
+  }
+
+  .volume-wrap input {
+    width: 100% !important;
+    flex: 1 1 auto;
+  }
+
+  input[type="range"] {
+    min-height: 36px;
+  }
+
+  .quick-presets,
+  .scopes {
+    padding: 11px !important;
+  }
+
+  .preset-strip {
+    gap: 8px;
+    margin-right: -2px;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+
+  .preset-btn {
+    flex-basis: 158px !important;
+    min-height: 72px !important;
+    padding: 11px !important;
+  }
+
+  .preset-btn strong {
+    font-size: 12px !important;
+  }
+
+  .preset-btn span {
+    font-size: 10px !important;
+  }
+
+  .scope-grid {
+    display: block !important;
+  }
+
+  #scopeCanvas {
+    width: 100% !important;
+    height: 180px !important;
+  }
+
+  .scope-readout {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-top: 8px;
+  }
+
+  .scope-readout span {
+    padding: 8px;
+    border: 1px solid var(--line-soft);
+    border-radius: 7px;
+    background: rgba(0,0,0,.13);
+  }
+
+  .source-block {
+    padding: 14px 12px 12px !important;
+  }
+
+  .source-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+  }
+
+  .source-btn {
+    font-size: 9px !important;
+    letter-spacing: .04em !important;
+  }
+
+  .source-meta {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 3px !important;
+    font-size: 9px !important;
+  }
+
+  .tabs {
+    display: flex !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    position: sticky !important;
+    top: 0;
+    z-index: 20 !important;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab {
+    flex: 0 0 96px !important;
+    min-height: 48px !important;
+    font-size: 9px !important;
+    letter-spacing: .04em !important;
+  }
+
+  .control-page {
+    padding: 8px 13px 16px !important;
+  }
+
+  .control-section-title {
+    margin-top: 16px !important;
+    font-size: 10px !important;
+  }
+
+  .control-row {
+    padding: 11px 0 !important;
+  }
+
+  .control-label {
+    font-size: 13px !important;
+    line-height: 1.25;
+  }
+
+  .control-value {
+    font-size: 10px !important;
+  }
+
+  .control-row select {
+    min-height: 44px !important;
+    font-size: 13px !important;
+  }
+
+  .toggle-switch {
+    width: 46px !important;
+    height: 26px !important;
+    flex: 0 0 auto;
+  }
+
+  .toggle-track::after {
+    width: 18px !important;
+    height: 18px !important;
+    left: 4px !important;
+    top: 3px !important;
+  }
+
+  .toggle-switch input:checked + .toggle-track::after {
+    left: 23px !important;
+  }
+
+  .tool-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .footer-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .perf-row {
+    flex-wrap: wrap;
+    font-size: 8px !important;
+  }
+
+  .calibration-card {
+    width: calc(100% - 18px) !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .top-actions #compareBtn {
+    display: none !important;
+  }
+
+  h1 {
+    font-size: 18px !important;
+  }
+
+  .source-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .tab {
+    flex-basis: 88px !important;
+  }
+}
