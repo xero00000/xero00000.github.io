@@ -1,0 +1,21 @@
+{
+  "name": "CRT Lab Pro",
+  "short_name": "CRT Lab",
+  "description": "GPU-accelerated CRT and analog video laboratory with calibration patterns, scopes, recording, monitor profiles, signal faults, and offline support.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#070807",
+  "theme_color": "#0d0e0d",
+  "categories": ["photo", "video", "utilities", "entertainment"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
