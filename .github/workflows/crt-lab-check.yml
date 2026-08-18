@@ -1,0 +1,91 @@
+name: CRT Lab checks
+
+on:
+  push:
+    paths:
+      - 'apps/retro-pvm/**'
+      - 'apps.json'
+      - '.github/workflows/crt-lab-check.yml'
+  pull_request:
+    paths:
+      - 'apps/retro-pvm/**'
+      - 'apps.json'
+      - '.github/workflows/crt-lab-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in apps/retro-pvm/*.js; do
+            echo "Checking $file"
+            node --check "$file"
+          done
+      - name: Static integrity
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+          import json, re, sys
+
+          root = Path('apps/retro-pvm')
+          html_text = (root / 'index.html').read_text(encoding='utf-8')
+
+          class IDs(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.ids = []
+              def handle_starttag(self, tag, attrs):
+                  for key, value in attrs:
+                      if key == 'id' and value:
+                          self.ids.append(value)
+
+          parser = IDs()
+          parser.feed(html_text)
+          duplicates = sorted({value for value in parser.ids if parser.ids.count(value) > 1})
+          if duplicates:
+              raise SystemExit(f'Duplicate HTML IDs: {duplicates}')
+
+          app_text = (root / 'crt-app.js').read_text(encoding='utf-8')
+          literal_refs = set(re.findall(r"\$\('#([^']+)'\)", app_text))
+          missing_ids = sorted(literal_refs - set(parser.ids))
+          if missing_ids:
+              raise SystemExit(f'Controller references missing HTML IDs: {missing_ids}')
+
+          imports = re.compile(r"(?:from\s+|import\s*)['\"](\./[^'\"]+)['\"]")
+          for file in root.glob('*.js'):
+              text = file.read_text(encoding='utf-8')
+              for relative in imports.findall(text):
+                  target = (file.parent / relative).resolve()
+                  if not target.exists():
+                      raise SystemExit(f'Missing module import: {file.name} -> {relative}')
+
+          manifest = json.loads((root / 'manifest.webmanifest').read_text(encoding='utf-8'))
+          if manifest.get('start_url') != './' or manifest.get('scope') != './':
+              raise SystemExit('PWA manifest start_url/scope must remain app-local.')
+
+          json.loads(Path('apps.json').read_text(encoding='utf-8'))
+
+          sw = (root / 'service-worker.js').read_text(encoding='utf-8')
+          required = [
+              'index.html', 'style.css', 'crt-app.js', 'renderer.js', 'crt-renderer.js',
+              'audio.js', 'gl-utils.js', 'shaders.js', 'shaders-signal.js',
+              'shaders-display.js', 'presets.js', 'analyzer.js', 'recorder.js',
+              'manifest.webmanifest', 'icon.svg'
+          ]
+          uncached = [name for name in required if f"'./{name}'" not in sw]
+          if uncached:
+              raise SystemExit(f'Service worker CORE is missing: {uncached}')
+
+          print(f'HTML IDs: {len(parser.ids)}; controller refs: {len(literal_refs)}')
+          print('Static integrity checks passed.')
+          PY
