@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="screen" cx="50%" cy="45%" r="70%">
+      <stop offset="0" stop-color="#86ff9c"/>
+      <stop offset=".45" stop-color="#1d9a4a"/>
+      <stop offset="1" stop-color="#04130a"/>
+    </radialGradient>
+    <linearGradient id="case" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#343730"/><stop offset="1" stop-color="#11130f"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="104" fill="#080906"/>
+  <rect x="54" y="72" width="404" height="344" rx="44" fill="url(#case)" stroke="#565a50" stroke-width="8"/>
+  <rect x="86" y="104" width="340" height="250" rx="58" fill="#000" stroke="#080b08" stroke-width="14"/>
+  <rect x="98" y="116" width="316" height="226" rx="50" fill="url(#screen)"/>
+  <g opacity=".35" stroke="#d8ffe1" stroke-width="2">
+    <path d="M108 150h296M104 178h304M101 206h310M100 234h312M101 262h310M104 290h304M108 318h296"/>
+  </g>
+  <circle cx="106" cy="386" r="11" fill="#76ff8b"/>
+  <circle cx="148" cy="386" r="11" fill="#1a1e18" stroke="#5c6257" stroke-width="4"/>
+  <path d="M312 381h92M312 394h92" stroke="#4c5148" stroke-width="7" stroke-linecap="round"/>
+  <text x="256" y="458" fill="#a3aaa0" font-family="monospace" font-size="34" font-weight="700" text-anchor="middle">CRT LAB</text>
+</svg>
