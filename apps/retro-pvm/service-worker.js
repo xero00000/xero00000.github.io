@@ -1,16 +1,22 @@
-const CACHE = 'xero-crt-lab-pro-v3-20260818';
+const CACHE = 'xero-crt-lab-pro-v3-20260818b';
 const CORE = [
   './',
   './index.html',
   './style.css',
   './crt-app.js',
   './renderer.js',
+  './crt-renderer.js',
+  './audio.js',
+  './gl-utils.js',
   './shaders.js',
+  './shaders-signal.js',
+  './shaders-display.js',
   './presets.js',
   './analyzer.js',
   './recorder.js',
   './manifest.webmanifest',
-  './icon.svg'
+  './icon.svg',
+  './README.md'
 ];
 
 self.addEventListener('install', event => {
