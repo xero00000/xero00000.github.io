@@ -9,10 +9,10 @@
   },
   {
     "id": "retro-pvm",
-    "title": "CRT Lab Pro",
-    "description": "A modular WebGL2 CRT laboratory with live video and camera input, analog RGB/composite/RF/VHS signal simulation, phosphor persistence, masks, scanlines, geometry calibration, presets, capture, degauss, and authentic tube behavior.",
+    "title": "CRT Lab Pro 3",
+    "description": "A full WebGL2 CRT and analog-video workstation with RGB/component/S-Video/NTSC/PAL/RF/VHS paths, phosphor and tube physics, professional scopes, guided calibration, processed recording, screen/camera input, A/B comparison, faults, presets, diagnostics, shareable setups, and offline PWA support.",
     "path": "apps/retro-pvm/",
-    "tags": ["Graphics", "WebGL2", "CRT", "Video", "Simulation", "Retro"],
+    "tags": ["Graphics", "WebGL2", "CRT", "Video", "Simulation", "Retro", "Scopes", "Calibration", "PWA"],
     "status": "live"
   }
 ]
