@@ -3,24 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#11100d" />
-  <title>CRT Lab — Retro PVM Simulator</title>
+  <meta name="theme-color" content="#0d0e0d" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="description" content="CRT Lab Pro is a GPU-accelerated analog video and cathode-ray tube simulator with calibration patterns, scopes, recording, and monitor presets." />
+  <title>CRT Lab Pro — Xero Web Lab</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="app-shell" id="appShell">
+<div class="app-shell" id="appShell">
     <header class="topbar">
       <div class="brand-wrap">
         <a class="home-link" href="../../" aria-label="Back to project hub">←</a>
         <div>
-          <div class="eyebrow">XERO WEB LAB</div>
-          <h1>CRT LAB <span>PRO</span></h1>
+          <div class="eyebrow">XERO WEB LAB · ANALOG VIDEO WORKSTATION</div>
+          <h1>CRT LAB <span>PRO</span><sup>3</sup></h1>
         </div>
       </div>
-      <div class="top-actions">
-        <button class="pill-btn" id="bypassBtn" title="Hold B to compare with bypass">COMPARE</button>
+      <div class="top-actions" role="toolbar" aria-label="Main actions">
+        <button class="pill-btn compact" id="undoBtn" title="Undo last adjustment" aria-label="Undo">↶</button>
+        <button class="pill-btn compact" id="redoBtn" title="Redo adjustment" aria-label="Redo">↷</button>
+        <button class="pill-btn" id="compareBtn" title="Toggle split comparison; hold B for full bypass">COMPARE</button>
+        <button class="pill-btn" id="freezeBtn" title="Freeze the current raster">FREEZE</button>
+        <button class="pill-btn record" id="recordBtn" title="Record processed output">● REC</button>
         <button class="pill-btn" id="screenshotBtn" title="Save rendered CRT frame">CAPTURE</button>
         <button class="pill-btn" id="fullscreenBtn">FULLSCREEN</button>
+        <button class="pill-btn hidden" id="installBtn">INSTALL</button>
       </div>
     </header>
 
@@ -29,7 +38,7 @@
         <div class="monitor-wrap" id="monitorWrap">
           <div class="monitor-shell">
             <div class="monitor-topline">
-              <span class="model-label">PVM-20XERO</span>
+              <span class="model-label">BVM-X24 / DIGITAL ANALOG HYBRID</span>
               <span class="signal-led"><i id="signalLed"></i><b id="signalLabel">RGB</b></span>
             </div>
 
@@ -38,14 +47,27 @@
                 <canvas id="glcanvas" aria-label="CRT simulation output"></canvas>
                 <div class="glass-glare" id="glassGlare"></div>
                 <div class="glass-reflection"></div>
+                <div class="compare-line" id="compareLine" aria-hidden="true"><span>RAW</span><span>CRT</span></div>
+                <input class="compare-slider" id="compareSlider" type="range" min="0" max="1" step="0.001" value="0.5" aria-label="Comparison split position" />
                 <div class="osd" id="osd" aria-live="polite">
                   <div class="osd-kicker" id="osdKicker">CRT LAB</div>
                   <div class="osd-main" id="osdMain">READY</div>
                   <div class="osd-sub" id="osdSub">LOAD MEDIA OR CHOOSE A SOURCE</div>
                 </div>
+                <div class="record-indicator" id="recordIndicator"><i></i><b>REC</b><span id="recordTime">00:00</span></div>
                 <div class="drop-hint" id="dropHint">
-                  <strong>DROP MEDIA</strong>
+                  <strong>DROP OR PASTE MEDIA</strong>
                   <span>image or video</span>
+                </div>
+                <div class="calibration-card" id="calibrationCard" role="dialog" aria-modal="false" aria-live="polite">
+                  <div class="calibration-step" id="calibrationStep">STEP 1 OF 7</div>
+                  <h3 id="calibrationTitle">Black level</h3>
+                  <p id="calibrationText">Adjust black level until the below-black bar disappears while the next bar remains barely visible.</p>
+                  <div class="calibration-actions">
+                    <button id="calibrationPrev">BACK</button>
+                    <button id="calibrationNext">NEXT</button>
+                    <button id="calibrationExit">EXIT</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -57,8 +79,8 @@
               </div>
               <div class="speaker-grille" aria-hidden="true"></div>
               <div class="monitor-badges">
-                <span>TRINITRON</span>
-                <span>15 kHz / 31 kHz</span>
+                <span>TRIAD PRECISION</span>
+                <span>15 / 31 / 45 kHz</span>
                 <span>WEBGL2</span>
               </div>
             </div>
@@ -68,21 +90,48 @@
 
         <div class="transport panel-surface">
           <div class="transport-left">
-            <button class="icon-btn" id="playBtn" title="Play / pause">▶</button>
-            <div class="timecode"><span id="currentTime">00:00</span><em>/</em><span id="durationTime">00:00</span></div>
+            <button class="icon-btn" id="stepBackBtn" title="Step backward one frame">│◀</button>
+            <button class="icon-btn primary" id="playBtn" title="Play / pause">▶</button>
+            <button class="icon-btn" id="stepForwardBtn" title="Step forward one frame">▶│</button>
+            <div class="timecode"><span id="currentTime">00:00:00</span><em>/</em><span id="durationTime">00:00:00</span></div>
           </div>
-          <input id="timeline" class="timeline" type="range" min="0" max="100" step="0.05" value="0" />
+          <input id="timeline" class="timeline" type="range" min="0" max="100" step="0.01" value="0" />
           <div class="transport-right">
-            <label class="volume-wrap">VOL <input id="volume" type="range" min="0" max="1" step="0.01" value="0.85" /></label>
+            <label class="volume-wrap">MONITOR <input id="volume" type="range" min="0" max="1" step="0.01" value="0.85" /></label>
           </div>
         </div>
 
         <div class="quick-presets panel-surface">
           <div class="section-head compact">
-            <div><span class="section-kicker">ONE TAP</span><h2>Monitor presets</h2></div>
+            <div><span class="section-kicker">ONE TAP</span><h2>Monitor profiles</h2></div>
+            <div class="head-actions">
+              <button class="mini-btn" id="savePresetBtn">SAVE CURRENT</button>
+              <button class="mini-btn" id="managePresetsBtn">MANAGE</button>
+            </div>
           </div>
           <div class="preset-strip" id="presetStrip"></div>
         </div>
+
+        <section class="scopes panel-surface" id="scopesPanel">
+          <div class="section-head compact">
+            <div><span class="section-kicker">MEASUREMENT</span><h2>Live scopes</h2></div>
+            <div class="scope-tabs" id="scopeTabs">
+              <button class="active" data-scope="waveform">WAVEFORM</button>
+              <button data-scope="vectorscope">VECTOR</button>
+              <button data-scope="histogram">HISTOGRAM</button>
+              <button data-scope="off">OFF</button>
+            </div>
+          </div>
+          <div class="scope-grid">
+            <canvas id="scopeCanvas" width="960" height="240" aria-label="Video measurement scope"></canvas>
+            <div class="scope-readout" id="scopeReadout">
+              <span><b id="ireMin">0</b> IRE MIN</span>
+              <span><b id="ireMax">100</b> IRE MAX</span>
+              <span><b id="lumaAvg">50</b> AVG LUMA</span>
+              <span><b id="chromaPeak">0</b> CHROMA</span>
+            </div>
+          </div>
+        </section>
       </section>
 
       <aside class="inspector panel-surface">
@@ -92,16 +141,17 @@
             <span class="source-status" id="sourceStatus">TEST PATTERN</span>
           </div>
           <div class="source-actions">
-            <button class="source-btn primary" id="loadMediaBtn">LOAD MEDIA</button>
+            <button class="source-btn primary" id="loadMediaBtn">MEDIA</button>
             <button class="source-btn" id="cameraBtn">CAMERA</button>
+            <button class="source-btn" id="screenBtn">SCREEN</button>
             <button class="source-btn" id="testBtn">TEST</button>
             <button class="source-btn" id="snowBtn">SNOW</button>
           </div>
           <input id="mediaInput" type="file" accept="image/*,video/*" hidden />
           <video id="sourceVideo" playsinline loop hidden></video>
           <div class="source-meta" id="sourceMeta">
-            <span id="sourceName">Built-in SMPTE bars</span>
-            <span id="sourceResolution">640 × 480</span>
+            <span id="sourceName">Built-in SMPTE RP 219</span>
+            <span id="sourceResolution">640 × 480 · 59.94p</span>
           </div>
         </div>
 
@@ -110,6 +160,7 @@
           <button class="tab" data-tab="display">DISPLAY</button>
           <button class="tab" data-tab="geometry">GEOMETRY</button>
           <button class="tab" data-tab="tube">TUBE</button>
+          <button class="tab" data-tab="tools">TOOLS</button>
         </nav>
 
         <div class="control-scroll">
@@ -117,19 +168,50 @@
           <div class="control-page" data-page="display" id="displayControls"></div>
           <div class="control-page" data-page="geometry" id="geometryControls"></div>
           <div class="control-page" data-page="tube" id="tubeControls"></div>
+          <div class="control-page tools-page" data-page="tools" id="toolsControls">
+            <section class="tool-card">
+              <h3>Calibration assistant</h3>
+              <p>Walk through PLUGE, overscan, geometry, convergence, color and focus patterns.</p>
+              <button class="wide-btn" id="calibrateBtn">START GUIDED CALIBRATION</button>
+            </section>
+            <section class="tool-card">
+              <h3>Output</h3>
+              <div class="tool-grid">
+                <button id="toolScreenshotBtn">CAPTURE PNG</button>
+                <button id="toolRecordBtn">RECORD WEBM</button>
+                <button id="copyFrameBtn">COPY FRAME</button>
+                <button id="shareFrameBtn">SHARE FRAME</button>
+                <button id="shareSetupBtn">SHARE SETUP LINK</button>
+              </div>
+            </section>
+            <section class="tool-card">
+              <h3>System diagnostics</h3>
+              <pre id="diagnosticsText">Collecting GPU capabilities…</pre>
+              <button class="wide-btn" id="copyDiagnosticsBtn">COPY DIAGNOSTICS</button>
+            </section>
+            <section class="tool-card">
+              <h3>Data and recovery</h3>
+              <div class="tool-grid">
+                <button id="exportBtn">EXPORT SETTINGS</button>
+                <button id="importBtn">IMPORT SETTINGS</button>
+                <button id="resetBtn">FACTORY RESET</button>
+                <button id="clearStorageBtn">CLEAR LOCAL DATA</button>
+              </div>
+              <input id="settingsInput" type="file" accept="application/json,.json" hidden />
+            </section>
+          </div>
         </div>
 
         <div class="inspector-footer">
           <div class="footer-row">
-            <button class="footer-btn" id="resetBtn">RESET</button>
-            <button class="footer-btn" id="exportBtn">EXPORT</button>
-            <button class="footer-btn" id="importBtn">IMPORT</button>
-            <input id="settingsInput" type="file" accept="application/json,.json" hidden />
+            <button class="footer-btn" id="randomFaultBtn">FAULT BURST</button>
+            <button class="footer-btn" id="safeModeBtn">SAFE QUALITY</button>
+            <button class="footer-btn" id="helpBtn">HELP</button>
           </div>
           <div class="perf-row">
             <span id="fpsLabel">60 FPS</span>
             <span id="renderLabel">960 × 720</span>
-            <span>GPU CRT PIPELINE</span>
+            <span id="gpuLabel">GPU CRT PIPELINE</span>
           </div>
         </div>
       </aside>
@@ -137,14 +219,37 @@
 
     <footer class="footer-help">
       <span><kbd>SPACE</kbd> play/pause</span>
-      <span><kbd>B</kbd> hold bypass</span>
+      <span><kbd>B</kbd> hold raw bypass</span>
+      <span><kbd>C</kbd> compare split</span>
+      <span><kbd>F</kbd> freeze</span>
       <span><kbd>P</kbd> power</span>
       <span><kbd>D</kbd> degauss</span>
-      <span><kbd>S</kbd> screenshot</span>
+      <span><kbd>S</kbd> capture</span>
+      <span><kbd>R</kbd> record</span>
       <span>Settings auto-save locally</span>
     </footer>
   </div>
 
+  <dialog class="preset-dialog" id="presetDialog">
+    <form method="dialog">
+      <div class="dialog-head"><h2>Custom monitor profiles</h2><button value="cancel" aria-label="Close">×</button></div>
+      <div id="customPresetList" class="custom-preset-list"></div>
+      <div class="dialog-actions"><button value="cancel">DONE</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="help-dialog" id="helpDialog">
+    <form method="dialog">
+      <div class="dialog-head"><h2>CRT Lab Pro controls</h2><button value="cancel" aria-label="Close">×</button></div>
+      <div class="help-content">
+        <p>Load, paste, drag, capture a camera, or share a screen. Every source is rendered through the same two-pass analog signal and tube pipeline.</p>
+        <p><strong>Compare</strong> reveals the raw source left of the movable split. Hold <kbd>B</kbd> for a full temporary bypass.</p>
+        <p><strong>Record</strong> exports a processed WebM or MP4 where the browser supports it. Source audio is included when the browser exposes an audio capture track.</p>
+        <p>Use the calibration assistant and scopes for repeatable monitor setup. Export settings to move a profile between devices, or Share Setup to encode the exact calibration into a URL.</p>
+      </div>
+      <div class="dialog-actions"><button value="cancel">CLOSE</button></div>
+    </form>
+  </dialog>
   <script type="module" src="crt-app.js"></script>
 </body>
 </html>
