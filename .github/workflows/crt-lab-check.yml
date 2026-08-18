@@ -21,21 +21,27 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+
       - name: JavaScript syntax
         shell: bash
         run: |
           set -euo pipefail
-          for file in apps/retro-pvm/*.js; do
+          for file in apps/retro-pvm/*.js apps/retro-pvm/*.mjs; do
+            [ -e "$file" ] || continue
             echo "Checking $file"
             node --check "$file"
           done
+
+      - name: Preset regression tests
+        run: node apps/retro-pvm/profile-regression.mjs
+
       - name: Static integrity
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
           from html.parser import HTMLParser
-          import json, re, sys
+          import json, re
 
           root = Path('apps/retro-pvm')
           html_text = (root / 'index.html').read_text(encoding='utf-8')
@@ -62,7 +68,7 @@ jobs:
               raise SystemExit(f'Controller references missing HTML IDs: {missing_ids}')
 
           imports = re.compile(r"(?:from\s+|import\s*)['\"](\./[^'\"]+)['\"]")
-          for file in root.glob('*.js'):
+          for file in list(root.glob('*.js')) + list(root.glob('*.mjs')):
               text = file.read_text(encoding='utf-8')
               for relative in imports.findall(text):
                   target = (file.parent / relative).resolve()
@@ -75,16 +81,33 @@ jobs:
 
           json.loads(Path('apps.json').read_text(encoding='utf-8'))
 
+          mobile = (root / 'mobile-fixes.css').read_text(encoding='utf-8')
+          mobile_guards = [
+              '@media (max-width: 900px)',
+              '.workspace',
+              '.inspector',
+              'width: 100% !important',
+              '@media (max-width: 620px)',
+              '.source-actions',
+              '.tabs'
+          ]
+          missing_mobile = [guard for guard in mobile_guards if guard not in mobile]
+          if missing_mobile:
+              raise SystemExit(f'Mobile layout guard missing: {missing_mobile}')
+
           sw = (root / 'service-worker.js').read_text(encoding='utf-8')
           required = [
-              'index.html', 'style.css', 'crt-app.js', 'renderer.js', 'crt-renderer.js',
-              'audio.js', 'gl-utils.js', 'shaders.js', 'shaders-signal.js',
-              'shaders-display.js', 'presets.js', 'analyzer.js', 'recorder.js',
-              'manifest.webmanifest', 'icon.svg'
+              'index.html', 'style.css', 'mobile-fixes.css', 'crt-app.js', 'renderer.js',
+              'profile-normalizer.js', 'crt-renderer.js', 'audio.js', 'gl-utils.js',
+              'shaders.js', 'shaders-signal.js', 'shaders-display.js', 'presets.js',
+              'analyzer.js', 'recorder.js', 'manifest.webmanifest', 'icon.svg'
           ]
           uncached = [name for name in required if f"'./{name}'" not in sw]
           if uncached:
               raise SystemExit(f'Service worker CORE is missing: {uncached}')
+
+          if 'networkFirst(request' not in sw:
+              raise SystemExit('Service worker must keep app code network-first to avoid stale fixes.')
 
           print(f'HTML IDs: {len(parser.ids)}; controller refs: {len(literal_refs)}')
           print('Static integrity checks passed.')
