@@ -1,0 +1,18 @@
+[
+  {
+    "id": "image-trainer",
+    "title": "Continual Image Trainer",
+    "description": "Search for images, train a compact generator one image at a time, generate new images, and save or reload browser-side checkpoints.",
+    "path": "apps/image-trainer/",
+    "tags": ["AI", "Images", "Training", "TensorFlow.js"],
+    "status": "beta"
+  },
+  {
+    "id": "retro-pvm",
+    "title": "Retro PVM Simulator",
+    "description": "A detailed WebGL2 professional video monitor simulation with CRT signal processing, phosphor effects, faults, test patterns, and screen overlay mode.",
+    "path": "apps/retro-pvm/",
+    "tags": ["Graphics", "WebGL", "Simulation", "Retro"],
+    "status": "live"
+  }
+]
