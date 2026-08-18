@@ -9,10 +9,10 @@
   },
   {
     "id": "retro-pvm",
-    "title": "Retro PVM Simulator",
-    "description": "A detailed WebGL2 professional video monitor simulation with CRT signal processing, phosphor effects, faults, test patterns, and screen overlay mode.",
+    "title": "CRT Lab Pro",
+    "description": "A modular WebGL2 CRT laboratory with live video and camera input, analog RGB/composite/RF/VHS signal simulation, phosphor persistence, masks, scanlines, geometry calibration, presets, capture, degauss, and authentic tube behavior.",
     "path": "apps/retro-pvm/",
-    "tags": ["Graphics", "WebGL", "Simulation", "Retro"],
+    "tags": ["Graphics", "WebGL2", "CRT", "Video", "Simulation", "Retro"],
     "status": "live"
   }
 ]
