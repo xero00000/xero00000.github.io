@@ -1,0 +1,63 @@
+name: Image Trainer checks
+
+on:
+  push:
+    paths:
+      - 'apps/image-trainer/**'
+      - 'apps.json'
+      - '.github/workflows/image-trainer-check.yml'
+  pull_request:
+    paths:
+      - 'apps/image-trainer/**'
+      - 'apps.json'
+      - '.github/workflows/image-trainer-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in apps/image-trainer/*.js; do node --check "$file"; done
+      - name: Static integrity
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+          import re, json
+          root=Path('apps/image-trainer')
+          html=(root/'index.html').read_text(encoding='utf-8')
+          js='\n'.join(p.read_text(encoding='utf-8') for p in [root/'core.js',root/'dataset.js',root/'training.js',root/'main.js'])
+          css=(root/'style.css').read_text(encoding='utf-8')
+          class P(HTMLParser):
+              def __init__(self): super().__init__(); self.ids=[]; self.scripts=[]; self.links=[]
+              def handle_starttag(self, tag, attrs):
+                  d=dict(attrs)
+                  if d.get('id'): self.ids.append(d['id'])
+                  if tag=='script' and d.get('src'): self.scripts.append(d['src'])
+                  if tag=='link' and d.get('href'): self.links.append(d['href'])
+          p=P(); p.feed(html)
+          dup=sorted({x for x in p.ids if p.ids.count(x)>1})
+          if dup: raise SystemExit(f'Duplicate ids: {dup}')
+          refs=set(re.findall(r"\$\('#([^']+)'\)",js))
+          missing=sorted(refs-set(p.ids))
+          if missing: raise SystemExit(f'Missing DOM ids: {missing}')
+          for required in ['core.js','dataset.js','training.js','main.js','style.css']:
+              if required not in p.scripts+p.links: raise SystemExit(f'index.html does not load {required}')
+          for token in ['webkitdirectory','videoInput','extractFrames','chooseFolder','trainQueue']:
+              if token not in html: raise SystemExit(f'Missing batch-import UI token: {token}')
+          for token in ['walkDirectory','extractVideoFrames','saveReplayDB','trainSelected']:
+              if token not in js: raise SystemExit(f'Missing batch-import implementation: {token}')
+          if '@media(max-width:650px)' not in css: raise SystemExit('Mobile layout guard missing')
+          json.loads(Path('apps.json').read_text(encoding='utf-8'))
+          print(f'IDs: {len(p.ids)}, JS refs: {len(refs)}')
+          print('Image Trainer static checks passed.')
+          PY
