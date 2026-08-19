@@ -22,9 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: JavaScript syntax
-        shell: bash
         run: |
-          set -euo pipefail
           for file in apps/image-trainer/*.js; do node --check "$file"; done
       - name: Static integrity
         shell: bash
@@ -35,7 +33,7 @@ jobs:
           import re, json
           root=Path('apps/image-trainer')
           html=(root/'index.html').read_text(encoding='utf-8')
-          js='\n'.join(p.read_text(encoding='utf-8') for p in [root/'core.js',root/'dataset.js',root/'training.js',root/'main.js'])
+          js='\n'.join(p.read_text(encoding='utf-8') for p in [root/'core.js',root/'dataset.js',root/'hf.js',root/'training.js',root/'main.js'])
           css=(root/'style.css').read_text(encoding='utf-8')
           class P(HTMLParser):
               def __init__(self): super().__init__(); self.ids=[]; self.scripts=[]; self.links=[]
@@ -48,14 +46,23 @@ jobs:
           dup=sorted({x for x in p.ids if p.ids.count(x)>1})
           if dup: raise SystemExit(f'Duplicate ids: {dup}')
           refs=set(re.findall(r"\$\('#([^']+)'\)",js))
-          missing=sorted(refs-set(p.ids))
+          main=(root/'main.js').read_text(encoding='utf-8')
+          dynamic_ids=set(re.findall(r'id="([^"]+)"',main))
+          missing=sorted(refs-set(p.ids)-dynamic_ids)
           if missing: raise SystemExit(f'Missing DOM ids: {missing}')
           for required in ['core.js','dataset.js','training.js','main.js','style.css']:
               if required not in p.scripts+p.links: raise SystemExit(f'index.html does not load {required}')
+          if "loadClassicScript('hf.js')" not in main: raise SystemExit('main.js does not bootstrap hf.js')
           for token in ['webkitdirectory','videoInput','extractFrames','chooseFolder','trainQueue']:
               if token not in html: raise SystemExit(f'Missing batch-import UI token: {token}')
-          for token in ['walkDirectory','extractVideoFrames','saveReplayDB','trainSelected']:
+          for token in ['hfDataset','hfDiscover','hfImageColumn','hfCaptionColumn','hfStreamTrain','hfResume']:
+              if token not in main: raise SystemExit(f'Missing dynamically injected HF UI token: {token}')
+          for token in ['walkDirectory','extractVideoFrames','saveReplayDB','trainSelected','datasets-server.huggingface.co','discoverHF','hfRowsToItems','trainHFStream','refreshHFItem','HF_PROGRESS_KEY']:
               if token not in js: raise SystemExit(f'Missing batch-import implementation: {token}')
+
+          hf=(root/'hf.js').read_text(encoding='utf-8')
+          for token in ["'/splits'","'/rows'","'/info'",'length:Math.min(100','Authorization:`Bearer ${token}`','queue import capped at 2,000']:
+              if token not in hf: raise SystemExit(f'Missing HF Dataset Viewer guard: {token}')
           if '@media(max-width:650px)' not in css: raise SystemExit('Mobile layout guard missing')
           json.loads(Path('apps.json').read_text(encoding='utf-8'))
           print(f'IDs: {len(p.ids)}, JS refs: {len(refs)}')
