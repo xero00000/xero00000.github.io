@@ -1,10 +1,10 @@
 [
   {
     "id": "image-trainer",
-    "title": "Continual Image Trainer 2",
-    "description": "A browser-side continual image trainer with web search, whole-folder datasets, local video frame extraction, sequential one-image-at-a-time training, generation, persistent replay memory, and save/load checkpoints.",
+    "title": "Continual Image Trainer 3",
+    "description": "A browser-side continual image trainer with web search, Hugging Face dataset streaming, whole-folder datasets, local video frame extraction, sequential one-image-at-a-time training, generation, persistent replay memory, and save/load checkpoints.",
     "path": "apps/image-trainer/",
-    "tags": ["AI", "Images", "Training", "TensorFlow.js", "Datasets", "Video"],
+    "tags": ["AI", "Images", "Training", "TensorFlow.js", "Datasets", "Video", "Hugging Face"],
     "status": "beta"
   },
   {
