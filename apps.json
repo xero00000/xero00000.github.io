@@ -1,10 +1,10 @@
 [
   {
     "id": "image-trainer",
-    "title": "Continual Image Trainer",
-    "description": "Search for images, train a compact generator one image at a time, generate new images, and save or reload browser-side checkpoints.",
+    "title": "Continual Image Trainer 2",
+    "description": "A browser-side continual image trainer with web search, whole-folder datasets, local video frame extraction, sequential one-image-at-a-time training, generation, persistent replay memory, and save/load checkpoints.",
     "path": "apps/image-trainer/",
-    "tags": ["AI", "Images", "Training", "TensorFlow.js"],
+    "tags": ["AI", "Images", "Training", "TensorFlow.js", "Datasets", "Video"],
     "status": "beta"
   },
   {
